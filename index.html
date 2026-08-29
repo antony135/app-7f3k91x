@@ -101,7 +101,7 @@
             transform-origin: bottom center;
             margin-left: -10px;
             margin-top: -22px;
-            display: none; /* Erst anzeigen, wenn Kompass-Signal da ist */
+            display: none;
             transition: transform 0.1s ease-out;
         }
         .user-location-dot {
@@ -206,7 +206,7 @@
             color: white;
         }
 
-        /* Styling der Popup-Karten */
+        /* Popup-Karten */
         .leaflet-popup-content-wrapper {
             background: #222;
             color: #fff;
@@ -223,7 +223,6 @@
         }
         .trail-popup h4 {
             margin: 0 0 6px 0;
-            color: #2ecc71;
             font-size: 16px;
         }
         .trail-popup .desc {
@@ -269,7 +268,7 @@
     <div class="btn-location-wrapper">
         <button class="btn-location" onclick="centerToUserLocation()" title="Mein Standort">
             <svg viewBox="0 0 24 24">
-                <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
             </svg>
         </button>
     </div>
@@ -292,21 +291,23 @@
 
     <!-- External Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Plugin für die Karten-Rotation -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // --- DEINE SUPABASE ZUGANGSDATEN ---
         const SUPABASE_URL = 'https://styqdhuqcmukejmzucwa.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0eXFkaHVxY211a2VqbXp1Y3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4MTU3NDYsImV4cCI6MjEwMzM5MTc0Nn0.gG4WfcBNlhI0hW4woeftFlrmH5JyGJMzEtgy7k5BVkc';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInRefiI6InN0eXFkaHVxY211a2VqbXp1Y3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4MTU3NDYsImV4cCI6MjEwMzM5MTc0Nn0.gG4WfcBNlhI0hW4woeftFlrmH5JyGJMzEtgy7k5BVkc';
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Karte mit Touch-Rotation aktivieren
+        // Karte mit echter Touch-Rotation initialisieren
         const map = L.map('map', { 
             zoomControl: false,
+            rotate: true,
             touchRotate: true,
-            rotate: true
+            rotateControl: false
         }).setView([47.2692, 11.4041], 13);
 
         L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
@@ -314,16 +315,7 @@
             attribution: '© OpenStreetMap, CyclOSM'
         }).addTo(map);
 
-        // Farbpalette für Trails (Gut sichtbare Farben auf dunklem Hintergrund)
-        const trailColors = [
-            '#ff0055', // Neon-Pink
-            '#00d2ff', // Cyan
-            '#ff9900', // Orange
-            '#a855f7', // Lila
-            '#2ecc71', // Grün
-            '#f1c40f', // Gelb
-            '#ff3333'  /* Rot */
-        ];
+        const trailColors = ['#ff0055', '#00d2ff', '#ff9900', '#a855f7', '#2ecc71', '#f1c40f', '#ff3333'];
 
         function getRandomTrailColor() {
             return trailColors[Math.floor(Math.random() * trailColors.length)];
@@ -334,7 +326,6 @@
         let userMarker = null;
         let userLatLng = null;
 
-        // Standort-Marker mit Richtungszeiger
         const userIcon = L.divIcon({
             className: 'user-location-marker',
             html: '<div class="user-location-heading" id="user-heading"></div><div class="user-location-pulse"></div><div class="user-location-dot"></div>',
@@ -342,7 +333,6 @@
             iconAnchor: [20, 20]
         });
 
-        // Standort-Tracking
         map.locate({ 
             setView: false, 
             watch: true, 
@@ -354,28 +344,18 @@
             userLatLng = e.latlng;
             if (!userMarker) {
                 userMarker = L.marker(userLatLng, { icon: userIcon }).addTo(map);
-                initKompass(); // Kompass-Sensor nach Erstellen des Markers aktivieren
+                initKompass();
             } else {
                 userMarker.setLatLng(userLatLng);
             }
         });
 
-        map.on('locationerror', function(e) {
-            console.error("Standort-Fehler:", e.message);
-            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-                alert("Standortfehler: Geolocation erfordert eine sichere HTTPS-Verbindung!");
-            }
-        });
-
-        // Blickrichtung / Kompass auslesen
         function initKompass() {
             const handleOrientation = (e) => {
                 let compassHeading = null;
                 if (e.webkitCompassHeading) {
-                    // iOS
                     compassHeading = e.webkitCompassHeading;
                 } else if (e.alpha !== null) {
-                    // Android
                     compassHeading = 360 - e.alpha;
                 }
 
@@ -388,7 +368,6 @@
                 }
             };
 
-            // iOS 13+ Sensoren-Freigabe anfordern
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(response => {
@@ -412,7 +391,6 @@
             }
         }
 
-        // File Selection & Modal
         document.getElementById('file-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -428,10 +406,7 @@
         });
 
         async function saveUpload() {
-            if (!currentGpxContent) {
-                alert("Die Datei wurde noch nicht vollständig gelesen!");
-                return;
-            }
+            if (!currentGpxContent) return;
 
             const name = document.getElementById('trail-name').value.trim() || 'Unbenannter Trail';
             const desc = document.getElementById('trail-desc').value.trim();
@@ -441,15 +416,11 @@
 
             const { data, error } = await db
                 .from('Trails')
-                .insert([{ 
-                    name: name, 
-                    description: desc, 
-                    gpx_data: gpxToSend 
-                }])
+                .insert([{ name: name, description: desc, gpx_data: gpxToSend }])
                 .select();
 
             if (error) {
-                alert("Fehler beim Speichern in Supabase: " + error.message);
+                alert("Fehler beim Speichern: " + error.message);
                 return;
             }
 
@@ -465,9 +436,8 @@
             currentGpxContent = null;
         }
 
-        // Trail auf Karte zeichnen mit variabler Farbe
         function addGpxToMap(gpxData, dbId, customName, customDesc, zoomTo = false) {
-            const color = getRandomTrailColor(); // Zuweisung einer zufälligen Farbe
+            const color = getRandomTrailColor();
 
             const gpxLayer = new L.GPX(gpxData, {
                 async: true,
@@ -504,36 +474,21 @@
             loadedTrails.push({ id: dbId, layer: gpxLayer });
         }
 
-        // Trail löschen
         async function deleteSingleTrail(dbId) {
-            if (confirm("Diesen Trail wirklich für ALLE Benutzer aus der Cloud löschen?")) {
-                const { error } = await db
-                    .from('Trails')
-                    .delete()
-                    .eq('id', dbId);
-
+            if (confirm("Diesen Trail wirklich für ALLE Benutzer löschen?")) {
+                const { error } = await db.from('Trails').delete().eq('id', dbId);
                 if (error) {
                     alert("Fehler beim Löschen: " + error.message);
                     return;
                 }
-
                 const item = loadedTrails.find(t => t.id === dbId);
                 if (item) map.removeLayer(item.layer);
                 loadedTrails = loadedTrails.filter(t => t.id !== dbId);
             }
         }
 
-        // Beim Start Trails laden
         window.onload = async function() {
-            const { data: trails, error } = await db
-                .from('Trails')
-                .select('*');
-
-            if (error) {
-                console.error("Fehler beim Laden aus Supabase:", error);
-                return;
-            }
-
+            const { data: trails, error } = await db.from('Trails').select('*');
             if (trails) {
                 trails.forEach(trail => {
                     addGpxToMap(trail.gpx_data, trail.id, trail.name, trail.description, false);
