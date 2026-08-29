@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow">
     <title>Innsbruck Private Trails</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -25,7 +26,7 @@
         /* Floating Button unten links (+) */
         .btn-add-wrapper {
             position: absolute;
-            bottom: 30px;
+            bottom: 95px;
             left: 20px;
             z-index: 1000;
         }
@@ -57,7 +58,7 @@
         .btn-location-wrapper {
             position: absolute;
             bottom: 30px;
-            right: 20px;
+            left: 20px;
             z-index: 1000;
         }
         .btn-location {
@@ -84,9 +85,24 @@
             fill: currentColor;
         }
 
-        /* Styling für den pulsierenden Standorts-Punkt */
+        /* Styling für den pulsierenden Standorts-Punkt mit Blickrichtung */
         .user-location-marker {
             position: relative;
+        }
+        .user-location-heading {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 22px solid rgba(52, 152, 219, 0.8);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            margin-left: -10px;
+            margin-top: -22px;
+            display: none; /* Erst anzeigen, wenn Kompass-Signal da ist */
+            transition: transform 0.1s ease-out;
         }
         .user-location-dot {
             width: 14px;
@@ -99,6 +115,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            z-index: 2;
         }
         .user-location-pulse {
             width: 40px;
@@ -110,6 +127,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             animation: pulse 2s infinite;
+            z-index: 1;
         }
         @keyframes pulse {
             0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
@@ -279,62 +297,112 @@
 
     <script>
         // --- DEINE SUPABASE ZUGANGSDATEN ---
-        const SUPABASE_URL = 'https://styqdhuqcmukejmzucwa.supabase.co'; // Nur die Basis-URL!
+        const SUPABASE_URL = 'https://styqdhuqcmukejmzucwa.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0eXFkaHVxY211a2VqbXp1Y3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4MTU3NDYsImV4cCI6MjEwMzM5MTc0Nn0.gG4WfcBNlhI0hW4woeftFlrmH5JyGJMzEtgy7k5BVkc';
         
-        // Client initialisieren mit neuem Variablennamen
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const map = L.map('map', { zoomControl: false }).setView([47.2692, 11.4041], 13);
+        // Karte mit Touch-Rotation aktivieren
+        const map = L.map('map', { 
+            zoomControl: false,
+            touchRotate: true,
+            rotate: true
+        }).setView([47.2692, 11.4041], 13);
 
         L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
             maxZoom: 18,
             attribution: '© OpenStreetMap, CyclOSM'
         }).addTo(map);
 
+        // Farbpalette für Trails (Gut sichtbare Farben auf dunklem Hintergrund)
+        const trailColors = [
+            '#ff0055', // Neon-Pink
+            '#00d2ff', // Cyan
+            '#ff9900', // Orange
+            '#a855f7', // Lila
+            '#2ecc71', // Grün
+            '#f1c40f', // Gelb
+            '#ff3333'  /* Rot */
+        ];
+
+        function getRandomTrailColor() {
+            return trailColors[Math.floor(Math.random() * trailColors.length)];
+        }
+
         let loadedTrails = [];
         let currentGpxContent = null;
         let userMarker = null;
         let userLatLng = null;
 
-        // Standort-Tracking
+        // Standort-Marker mit Richtungszeiger
         const userIcon = L.divIcon({
             className: 'user-location-marker',
-            html: '<div class="user-location-pulse"></div><div class="user-location-dot"></div>',
+            html: '<div class="user-location-heading" id="user-heading"></div><div class="user-location-pulse"></div><div class="user-location-dot"></div>',
             iconSize: [40, 40],
             iconAnchor: [20, 20]
         });
 
-        // Startet die Ortung mit verbesserten Optionen (Timeout & Fallback)
+        // Standort-Tracking
         map.locate({ 
             setView: false, 
             watch: true, 
             enableHighAccuracy: true,
-            timeout: 10000 // 10 Sekunden auf GPS warten, sonst Fehler werfen
+            timeout: 10000 
         });
 
-        // Wenn der Standort gefunden wurde
         map.on('locationfound', function(e) {
-            console.log("Standort gefunden:", e.latlng);
             userLatLng = e.latlng;
             if (!userMarker) {
                 userMarker = L.marker(userLatLng, { icon: userIcon }).addTo(map);
+                initKompass(); // Kompass-Sensor nach Erstellen des Markers aktivieren
             } else {
                 userMarker.setLatLng(userLatLng);
             }
         });
 
-        // NEU: Fehlerbehandlung, falls die Ortung fehlschlägt!
         map.on('locationerror', function(e) {
             console.error("Standort-Fehler:", e.message);
-            
-            // Erklärung für den Nutzer, falls HTTPS oder Berechtigung fehlt
             if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
                 alert("Standortfehler: Geolocation erfordert eine sichere HTTPS-Verbindung!");
-            } else {
-                alert("Standort konnte nicht ermittelt werden: " + e.message);
             }
         });
+
+        // Blickrichtung / Kompass auslesen
+        function initKompass() {
+            const handleOrientation = (e) => {
+                let compassHeading = null;
+                if (e.webkitCompassHeading) {
+                    // iOS
+                    compassHeading = e.webkitCompassHeading;
+                } else if (e.alpha !== null) {
+                    // Android
+                    compassHeading = 360 - e.alpha;
+                }
+
+                if (compassHeading !== null) {
+                    const headingEl = document.getElementById('user-heading');
+                    if (headingEl) {
+                        headingEl.style.display = 'block';
+                        headingEl.style.transform = `rotate(${compassHeading}deg)`;
+                    }
+                }
+            };
+
+            // iOS 13+ Sensoren-Freigabe anfordern
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation, true);
+                        }
+                    })
+                    .catch(console.error);
+            } else if ('ondeviceorientationabsolute' in window) {
+                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation, true);
+            }
+        }
 
         function centerToUserLocation() {
             if (userLatLng) {
@@ -350,16 +418,12 @@
             if (!file) return;
 
             const reader = new FileReader();
-            
             reader.onload = function(event) {
-                // Hier wird garantiert gewartet, bis der Inhalt geladen ist
                 currentGpxContent = event.target.result; 
-                
                 document.getElementById('trail-name').value = file.name.replace('.gpx', '');
                 document.getElementById('trail-desc').value = '';
                 document.getElementById('upload-modal').style.display = 'flex';
             };
-            
             reader.readAsText(file);
         });
 
@@ -371,8 +435,6 @@
 
             const name = document.getElementById('trail-name').value.trim() || 'Unbenannter Trail';
             const desc = document.getElementById('trail-desc').value.trim();
-            
-            // Inhalt sichern, bevor closeModal() ausgeführt wird und currentGpxContent leert!
             const gpxToSend = currentGpxContent; 
 
             closeModal();
@@ -403,12 +465,14 @@
             currentGpxContent = null;
         }
 
-        // Trail auf Karte zeichnen
+        // Trail auf Karte zeichnen mit variabler Farbe
         function addGpxToMap(gpxData, dbId, customName, customDesc, zoomTo = false) {
+            const color = getRandomTrailColor(); // Zuweisung einer zufälligen Farbe
+
             const gpxLayer = new L.GPX(gpxData, {
                 async: true,
                 polyline_options: {
-                    color: '#ff0055',
+                    color: color,
                     opacity: 0.9,
                     weight: 5,
                     lineCap: 'round'
@@ -426,7 +490,7 @@
 
                 const popupContent = `
                     <div class="trail-popup">
-                        <h4>${name}</h4>
+                        <h4 style="color: ${color};">${name}</h4>
                         ${descHtml}
                         <p>Länge: <strong>${distKm} km</strong></p>
                         <p>Aufstieg: <strong>+${eleGain} m</strong></p>
