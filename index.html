@@ -305,14 +305,34 @@
             iconAnchor: [20, 20]
         });
 
-        map.locate({ setView: false, watch: true, enableHighAccuracy: true });
+        // Startet die Ortung mit verbesserten Optionen (Timeout & Fallback)
+        map.locate({ 
+            setView: false, 
+            watch: true, 
+            enableHighAccuracy: true,
+            timeout: 10000 // 10 Sekunden auf GPS warten, sonst Fehler werfen
+        });
 
+        // Wenn der Standort gefunden wurde
         map.on('locationfound', function(e) {
+            console.log("Standort gefunden:", e.latlng);
             userLatLng = e.latlng;
             if (!userMarker) {
                 userMarker = L.marker(userLatLng, { icon: userIcon }).addTo(map);
             } else {
                 userMarker.setLatLng(userLatLng);
+            }
+        });
+
+        // NEU: Fehlerbehandlung, falls die Ortung fehlschlägt!
+        map.on('locationerror', function(e) {
+            console.error("Standort-Fehler:", e.message);
+            
+            // Erklärung für den Nutzer, falls HTTPS oder Berechtigung fehlt
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                alert("Standortfehler: Geolocation erfordert eine sichere HTTPS-Verbindung!");
+            } else {
+                alert("Standort konnte nicht ermittelt werden: " + e.message);
             }
         });
 
