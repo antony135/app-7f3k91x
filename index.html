@@ -26,21 +26,21 @@
         /* Floating Button unten links (+) */
         .btn-add-wrapper {
             position: absolute;
-            bottom: 95px;
+            bottom: 80px;
             left: 20px;
             z-index: 10;
         }
         .btn-add {
             background: #27ae60;
             color: white;
-            width: 56px;
-            height: 56px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             font-size: 30px;
             font-weight: 300;
             cursor: pointer;
             border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -57,18 +57,18 @@
         /* Floating Button unten links (Standort zentrieren) */
         .btn-location-wrapper {
             position: absolute;
-            bottom: 30px;
+            bottom: 25px;
             left: 20px;
             z-index: 10;
         }
         .btn-location {
             background: #222;
             color: #3498db;
-            width: 56px;
-            height: 56px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,7 +96,7 @@
             height: 0;
             border-left: 9px solid transparent;
             border-right: 9px solid transparent;
-            border-bottom: 20px solid rgba(52, 152, 219, 1);
+            border-bottom: 18px solid rgba(52, 152, 219, 1);
             position: absolute;
             top: 50%;
             left: 50%;
@@ -586,8 +586,6 @@
                         <h4 style="color: ${color};">${name}</h4>
                         ${descHtml}
                         <p>Länge: <strong>${stats.distKm} km</strong></p>
-                        <p>Aufstieg: <strong>+${stats.eleGain} m</strong></p>
-                        <p>Abstieg: <strong>-${stats.eleLoss} m</strong></p>
                         <button class="btn-delete-single" onclick="deleteSingleTrail(${dbId})">Trail für alle löschen</button>
                     </div>
                 `;
