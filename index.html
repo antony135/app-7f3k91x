@@ -302,26 +302,13 @@
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // HIER DEINE MAPTILER URL UND KEY EINFÜGEN:
+        const MAPTILER_KEY = '7LiPrNQYxbEkCspqfc7Q';
+        const MAP_STYLE_URL = `https://api.maptiler.com/maps/01a0541e-e459-7ad9-aec6-e4d2401944ef/style.json?key=${MAPTILER_KEY}`;
+
         const map = new maplibregl.Map({
             container: 'map',
-            style: {
-                version: 8,
-                sources: {
-                    'cyclosm': {
-                        type: 'raster',
-                        tiles: ['https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'],
-                        tileSize: 256,
-                        attribution: '© OpenStreetMap, CyclOSM'
-                    }
-                },
-                layers: [{
-                    id: 'cyclosm-layer',
-                    type: 'raster',
-                    source: 'cyclosm',
-                    minzoom: 0,
-                    maxzoom: 23
-                }]
-            },
+            style: MAP_STYLE_URL,
             center: [11.4041, 47.2692],
             zoom: 13,
             pitchWithRotate: false
@@ -646,6 +633,21 @@
         }
 
         map.on('load', async () => {
+            // Optionale 3D-Höhendaten von MapTiler laden
+            if (MAPTILER_KEY && MAPTILER_KEY !== '7LiPrNQYxbEkCspqfc7Q') {
+                map.addSource('maptiler-terrain', {
+                    type: 'raster-dem',
+                    url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${MAPTILER_KEY}`,
+                    tileSize: 512
+                });
+
+                map.setTerrain({
+                    source: 'maptiler-terrain',
+                    exaggeration: 1.0
+                });
+            }
+
+            // Trails aus Supabase laden
             const { data: trails, error } = await db
                 .from('Trails')
                 .select('*');
