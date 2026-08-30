@@ -311,7 +311,7 @@
             style: MAP_STYLE_URL,
             center: [11.4041, 47.2692],
             zoom: 13,
-            pitchWithRotate: false
+            pitchWithRotate: true
         });
 
         map.addControl(new maplibregl.NavigationControl({
@@ -643,7 +643,7 @@
 
                 map.setTerrain({
                     source: 'maptiler-terrain',
-                    exaggeration: 1.0
+                    exaggeration: 2.0
                 });
             }
 
