@@ -310,7 +310,12 @@
             zoomControl: true,
             rotate: true,
             touchRotate: true,
-            rotateControl: true
+            rotateControl: true,
+            shiftKeyRotate: true, // Erlaubt Shift + Mausziehen auf Mac / PC
+            rotateControl: {
+                closeOnNord: false, // Verhindert das Ausblenden bei Nord-Ausrichtung
+                position: 'topright'
+    }
         }).setView([47.2692, 11.4041], 13);
 
         L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
