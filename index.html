@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Innsbruck Private Trails</title>
     
+    <!-- MapLibre GL CSS -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     
     <style>
@@ -84,7 +85,7 @@
             fill: currentColor;
         }
 
-        /* Styling für den pulsierenden Standorts-Punkt */
+        /* Styling für den Standorts-Punkt mit integrierter Ausrichtungsspitze */
         .user-location-marker {
             position: relative;
             width: 40px;
@@ -93,17 +94,16 @@
         .user-location-heading {
             width: 0;
             height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 22px solid rgba(52, 152, 219, 0.8);
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 22px solid rgba(52, 152, 219, 0.95);
             position: absolute;
             top: 50%;
             left: 50%;
-            transform-origin: bottom center;
-            margin-left: -10px;
-            margin-top: -22px;
+            transform-origin: 50% 100%;
+            transform: translate(-50%, -100%);
             display: none;
-            transition: transform 0.1s ease-out;
+            z-index: 3;
         }
         .user-location-dot {
             width: 14px;
@@ -291,6 +291,7 @@
         </div>
     </div>
 
+    <!-- External Libraries -->
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/@tmcw/togeojson@5.8.1/dist/togeojson.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -301,7 +302,6 @@
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // MapLibre Karte initialisieren
         const map = new maplibregl.Map({
             container: 'map',
             style: {
@@ -311,6 +311,7 @@
                         type: 'raster',
                         tiles: ['https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'],
                         tileSize: 256,
+                        attribution: '© OpenStreetMap, CyclOSM'
                     }
                 },
                 layers: [{
@@ -318,28 +319,25 @@
                     type: 'raster',
                     source: 'cyclosm',
                     minzoom: 0,
-                    maxzoom: 23
+                    maxzoom: 20
                 }]
             },
-            center: [11.4041, 47.2692], // MapLibre nutzt [Lng, Lat]
+            center: [11.4041, 47.2692],
             zoom: 13,
             pitchWithRotate: false
         });
 
-        // Navigation Control (Zoom + Dauerhafter Kompass oben rechts)
         map.addControl(new maplibregl.NavigationControl({
             showCompass: true,
             showZoom: true,
             visualizePitch: false
         }), 'top-right');
 
-        // Farbpalette für Trails
         const trailColors = [
             '#ff0055', '#00d2ff', '#ff9900', 
             '#a855f7', '#2ecc71', '#f1c40f', '#ff3333'
         ];
 
-        // Generiert deterministisch immer dieselbe Farbe basierend auf der DB-ID
         function getStableTrailColor(id) {
             if (!id) return trailColors[0];
             const num = parseInt(id, 10) || String(id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -350,22 +348,76 @@
         let currentGpxContent = null;
         let userMarker = null;
         let userLngLat = null;
+        let currentHeading = null;
+        let kompassInitialized = false;
 
-        // Standort-Marker HTML
+        // Marker DOM-Element
         const el = document.createElement('div');
         el.className = 'user-location-marker';
         el.innerHTML = '<div class="user-location-heading" id="user-heading"></div><div class="user-location-pulse"></div><div class="user-location-dot"></div>';
 
-        // GPS Geolocation Tracking
+        // Ausrichtung bei Kartenrotation aktualisieren
+        map.on('rotate', updateHeadingUI);
+
+        function updateHeadingUI() {
+            if (currentHeading === null) return;
+            const headingEl = document.getElementById('user-heading');
+            if (headingEl) {
+                headingEl.style.display = 'block';
+                const mapBearing = map.getBearing();
+                const adjustedHeading = currentHeading - mapBearing;
+                headingEl.style.transform = `translate(-50%, -100%) rotate(${adjustedHeading}deg)`;
+            }
+        }
+
+        function handleOrientation(e) {
+            if (e.webkitCompassHeading) {
+                currentHeading = e.webkitCompassHeading;
+            } else if (e.alpha !== null) {
+                currentHeading = 360 - e.alpha;
+            }
+            updateHeadingUI();
+        }
+
+        function initKompass() {
+            if (kompassInitialized) return;
+
+            // Prüfen ob iOS Berechtigung verlangt
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation, true);
+                            kompassInitialized = true;
+                        }
+                    })
+                    .catch(console.error);
+            } else if ('ondeviceorientationabsolute' in window) {
+                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+                kompassInitialized = true;
+            } else if ('ondeviceorientation' in window) {
+                window.addEventListener('deviceorientation', handleOrientation, true);
+                kompassInitialized = true;
+            }
+        }
+
+        // GPS Standort-Tracking
         if ('geolocation' in navigator) {
             navigator.geolocation.watchPosition(
                 (position) => {
                     userLngLat = [position.coords.longitude, position.coords.latitude];
+                    
                     if (!userMarker) {
                         userMarker = new maplibregl.Marker({ element: el }).setLngLat(userLngLat).addTo(map);
-                        initKompass();
+                        initKompass(); // Versuche direkten Start (Android/Desktop)
                     } else {
                         userMarker.setLngLat(userLngLat);
+                    }
+
+                    // Falls vom GPS ein Bewegungswinkel (Heading) vorliegt, diesen als Fallback nutzen
+                    if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
+                        currentHeading = position.coords.heading;
+                        updateHeadingUI();
                     }
                 },
                 (error) => {
@@ -375,40 +427,12 @@
             );
         }
 
-        function initKompass() {
-            const handleOrientation = (e) => {
-                let compassHeading = null;
-                if (e.webkitCompassHeading) {
-                    compassHeading = e.webkitCompassHeading;
-                } else if (e.alpha !== null) {
-                    compassHeading = 360 - e.alpha;
-                }
-
-                if (compassHeading !== null) {
-                    const headingEl = document.getElementById('user-heading');
-                    if (headingEl) {
-                        headingEl.style.display = 'block';
-                        headingEl.style.transform = `rotate(${compassHeading}deg)`;
-                    }
-                }
-            };
-
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation, true);
-                        }
-                    })
-                    .catch(console.error);
-            } else if ('ondeviceorientationabsolute' in window) {
-                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-            } else {
-                window.addEventListener('deviceorientation', handleOrientation, true);
-            }
-        }
-
         function centerToUserLocation() {
+            // iOS Fallback: Manuelle Freigabe beim Klick
+            if (!kompassInitialized) {
+                initKompass();
+            }
+
             if (userLngLat) {
                 map.flyTo({ center: userLngLat, zoom: 16, speed: 1.2 });
             } else {
@@ -469,7 +493,6 @@
             currentGpxContent = null;
         }
 
-        // Hilfsfunktion: Berechnet Distanz und Höhenmeter aus GeoJSON
         function calculateTrailStats(geojson) {
             let distMeters = 0;
             let eleGain = 0;
@@ -486,7 +509,6 @@
                     const p1 = line[i];
                     const p2 = line[i+1];
                     
-                    // Haversine Distanz
                     const R = 6371000;
                     const dLat = (p2[1] - p1[1]) * Math.PI / 180;
                     const dLon = (p2[0] - p1[0]) * Math.PI / 180;
@@ -495,7 +517,6 @@
                               Math.sin(dLon/2) * Math.sin(dLon/2);
                     distMeters += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-                    // Elevation
                     if (p1[2] !== undefined && p2[2] !== undefined) {
                         const diff = p2[2] - p1[2];
                         if (diff > 0) eleGain += diff;
@@ -511,7 +532,6 @@
             };
         }
 
-        // Trail auf Karte zeichnen
         function addGpxToMap(gpxData, dbId, customName, customDesc, zoomTo = false) {
             const domParser = new DOMParser();
             const gpxXml = domParser.parseFromString(gpxData, 'text/xml');
@@ -541,7 +561,6 @@
                 }
             });
 
-            // Klick auf Trail -> Popup anzeigen
             map.on('click', layerId, (e) => {
                 const stats = calculateTrailStats(geojson);
                 const name = customName || 'Unbenannter Trail';
@@ -564,11 +583,9 @@
                     .addTo(map);
             });
 
-            // Cursor zum Zeiger machen beim Drüberfahren
             map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
 
-            // Auf Trail zentrieren falls gewünscht
             if (zoomTo && geojson.features.length > 0) {
                 const bounds = new maplibregl.LngLatBounds();
                 geojson.features.forEach(f => {
@@ -584,7 +601,6 @@
             loadedTrailIds.push(dbId);
         }
 
-        // Trail aus DB und von Karte löschen
         async function deleteSingleTrail(dbId) {
             if (confirm("Diesen Trail wirklich für ALLE Benutzer aus der Cloud löschen?")) {
                 const { error } = await db
@@ -600,7 +616,6 @@
                 if (map.getLayer(`trail-layer-${dbId}`)) map.removeLayer(`trail-layer-${dbId}`);
                 if (map.getSource(`trail-source-${dbId}`)) map.removeSource(`trail-source-${dbId}`);
                 
-                // Popups schließen
                 const popups = document.getElementsByClassName('maplibregl-popup');
                 if (popups[0]) popups[0].remove();
 
@@ -608,7 +623,6 @@
             }
         }
 
-        // Beim ersten Laden Trails aus Supabase holen
         map.on('load', async () => {
             const { data: trails, error } = await db
                 .from('Trails')
