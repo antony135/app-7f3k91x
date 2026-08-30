@@ -94,29 +94,29 @@
         .user-location-heading {
             width: 0;
             height: 0;
-            border-left: 9px solid transparent;
-            border-right: 9px solid transparent;
-            border-bottom: 22px solid rgba(52, 152, 219, 0.95);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 16px solid rgba(52, 152, 219, 0.9);
             position: absolute;
             top: 50%;
             left: 50%;
             transform-origin: 50% 100%;
             transform: translate(-50%, -100%);
             display: none;
-            z-index: 3;
+            z-index: 2;
         }
         .user-location-dot {
             width: 14px;
             height: 14px;
-            background-color: #3498db;
-            border: 3px solid #ffffff;
+            background-color: rgba(52, 152, 219, 0.9);
+            border: 2px solid #ffffff;
             border-radius: 50%;
             box-shadow: 0 0 8px rgba(0,0,0,0.5);
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 2;
+            z-index: 3;
         }
         .user-location-pulse {
             width: 40px;
@@ -350,6 +350,7 @@
         let userLngLat = null;
         let currentHeading = null;
         let kompassInitialized = false;
+        let highlightedTrailId = null;
 
         // Marker DOM-Element
         const el = document.createElement('div');
@@ -562,6 +563,20 @@
             });
 
             map.on('click', layerId, (e) => {
+                // 1. Vorheriges Highlight zurücksetzen
+                if (highlightedTrailId && map.getLayer(`trail-layer-${highlightedTrailId}`)) {
+                    const prevColor = getStableTrailColor(highlightedTrailId);
+                    map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-width', 5);
+                    map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-color', prevColor);
+                }
+
+                // 2. Aktuellen Trail hervorheben & nach ganz oben holen
+                highlightedTrailId = dbId;
+                map.moveLayer(layerId); // Schiebt die Ebene visuell über alle anderen Trails
+                map.setPaintProperty(layerId, 'line-width', 8); // Breiter machen
+                map.setPaintProperty(layerId, 'line-color', '#ffffff'); // Auf Weiß oder Knallfarbe ändern
+
+                // 3. Popup-Inhalt & Erstellung (wie bisher)
                 const stats = calculateTrailStats(geojson);
                 const name = customName || 'Unbenannter Trail';
                 const descHtml = customDesc ? `<div class="desc">${customDesc}</div>` : '';
@@ -577,10 +592,19 @@
                     </div>
                 `;
 
-                new maplibregl.Popup()
+                const popup = new maplibregl.Popup()
                     .setLngLat(e.lngLat)
                     .setHTML(popupHtml)
                     .addTo(map);
+
+                // Wenn das Popup geschlossen wird, das Highlight wieder aufheben
+                popup.on('close', () => {
+                    if (map.getLayer(layerId)) {
+                        map.setPaintProperty(layerId, 'line-width', 5);
+                        map.setPaintProperty(layerId, 'line-color', color);
+                    }
+                    highlightedTrailId = null;
+                });
             });
 
             map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
