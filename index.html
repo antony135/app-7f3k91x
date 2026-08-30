@@ -535,36 +535,59 @@
                 data: geojson
             });
 
+            // 1. UNSICHTBARER HITBOX-LAYER (Für leichtes Anklicken)
             map.addLayer({
-                id: layerId,
-                type: 'line',
-                source: sourceId,
-                layout: {
+                'id': `${layerId}-hitbox`,
+                'type': 'line',
+                'source': sourceId,
+                'layout': {
                     'line-join': 'round',
                     'line-cap': 'round'
                 },
-                paint: {
-                    'line-color': color,
-                    'line-width': 5,
-                    'line-opacity': 0.9
+                'paint': {
+                    'line-width': 20, // <--- Sehr breit, damit man leicht trifft!
+                    'line-opacity': 0  // <--- Komplett unsichtbar
                 }
             });
 
-            map.on('click', layerId, (e) => {
-                // 1. Vorheriges Highlight zurücksetzen
+            // 2. OPTISCHER LAYER (Für das schöne, dünne Aussehen)
+            map.addLayer({
+                'id': layerId,
+                'type': 'line',
+                'source': sourceId,
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': color,
+                    'line-width': 3, // <--- Schön dünn
+                    'line-opacity': 0.5
+                }
+            });
+
+            // 1. Klick-Event auf die HITBOX legen (nicht auf layerId!)
+            map.on('click', `${layerId}-hitbox`, (e) => {
+                if (e.originalEvent) e.originalEvent.stopPropagation();
+
+                // Vorheriges Highlight zurücksetzen
                 if (highlightedTrailId && map.getLayer(`trail-layer-${highlightedTrailId}`)) {
                     const prevColor = getStableTrailColor(highlightedTrailId);
-                    map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-width', 5);
+                    map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-width', 3);
                     map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-color', prevColor);
                 }
 
-                // 2. Aktuellen Trail hervorheben & nach ganz oben holen
+                // Aktuellen OPTISCHEN Layer hervorheben
                 highlightedTrailId = dbId;
-                map.moveLayer(layerId); // Schiebt die Ebene visuell über alle anderen Trails
-                map.setPaintProperty(layerId, 'line-width', 8); // Breiter machen
-                map.setPaintProperty(layerId, 'line-color', '#ffffff'); // Auf Weiß oder Knallfarbe ändern
+                if (map.getLayer(layerId)) {
+                    map.moveLayer(layerId); // Schiebt den sichtbaren Trail nach oben
+                    map.setPaintProperty(layerId, 'line-width', 7);
+                    map.setPaintProperty(layerId, 'line-color', '#ffffff');
+                }
 
-                // 3. Popup-Inhalt & Erstellung (wie bisher)
+                map.triggerRepaint();
+
+                // Popup-Inhalt & Erstellung
                 const stats = calculateTrailStats(geojson);
                 const name = customName || 'Unbenannter Trail';
                 const descHtml = customDesc ? `<div class="desc">${customDesc}</div>` : '';
@@ -586,15 +609,17 @@
                 // Wenn das Popup geschlossen wird, das Highlight wieder aufheben
                 popup.on('close', () => {
                     if (map.getLayer(layerId)) {
-                        map.setPaintProperty(layerId, 'line-width', 5);
+                        map.setPaintProperty(layerId, 'line-width', 3);
                         map.setPaintProperty(layerId, 'line-color', color);
+                        map.triggerRepaint();
                     }
                     highlightedTrailId = null;
                 });
             });
 
-            map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+            // 2. Cursor-Events ebenfalls komplett auf die HITBOX legen
+            map.on('mouseenter', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = ''; });
 
             if (zoomTo && geojson.features.length > 0) {
                 const bounds = new maplibregl.LngLatBounds();
