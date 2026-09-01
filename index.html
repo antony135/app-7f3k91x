@@ -181,64 +181,52 @@
 
         /* User Location Marker Styling */
         .user-location-marker {
-            width: 20px;
-            height: 20px;
             position: relative;
-            pointer-events: none;
-        }
-
-        /* Pulsierender blauer Ring im Hintergrund */
-        .user-location-pulse {
-            position: absolute;
-            top: 50%;
-            left: 50%;
             width: 40px;
             height: 40px;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 122, 255, 0.25);
-            border-radius: 50%;
-            animation: userPulse 2s infinite ease-out;
         }
-
-        /* Der kräftige blaue Punkt im Zentrum */
-        .user-location-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 14px;
-            height: 14px;
-            transform: translate(-50%, -50%);
-            background-color: #007aff;
-            border: 2.5px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(0, 122, 255, 0.6);
-        }
-
-        /* Der Ausrichtungs-Pfeil (Kompass) */
         .user-location-heading {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
             width: 0;
             height: 0;
-            border-left: 7px solid transparent;
-            border-right: 7px solid transparent;
-            border-bottom: 18px solid rgba(0, 122, 255, 0.85);
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 18px solid rgba(52, 152, 219, 1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
             transform-origin: 50% 100%;
-            margin-top: -18px;
-            filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));
+            transform: translate(-50%, -100%);
+            display: none;
+            z-index: 2;
         }
-
-        @keyframes userPulse {
-            0% {
-                transform: translate(-50%, -50%) scale(0.4);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 0;
-            }
+        .user-location-dot {
+            width: 14px;
+            height: 14px;
+            background-color: rgba(52, 152, 219, 1);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+        }
+        .user-location-pulse {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(52, 152, 219, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite;
+            z-index: 1;
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
         }
 
         /* Schlichte Modals */
