@@ -2,9 +2,9 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
-    <title>Innsbruck Private Trails</title>
+    <title>ShredMap</title>
     
     <!-- MapLibre GL CSS -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
@@ -17,16 +17,108 @@
             width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #191a1a;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
         #map {
             height: 100%;
             width: 100%;
         }
 
+        /* --- Ausklappbares FAB Menü (Oben Links) --- */
+        .fab-container {
+            position: absolute;
+            top: calc(15px + env(safe-area-inset-top));
+            left: 15px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-fab-main {
+            background: #222;
+            color: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 12;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+        }
+        .btn-fab-main:active {
+            transform: scale(0.92);
+        }
+        .btn-fab-main.active {
+            transform: rotate(90deg);
+            background: #333;
+        }
+        .btn-fab-main svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            transition: transform 0.3s ease;
+        }
+
+        /* Unter-Buttons Container */
+        .fab-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            pointer-events: none; /* Deaktiviert Klicks solange eingeklappt */
+            z-index: 11;
+        }
+
+        .btn-fab-sub {
+            background: #222;
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(-20px) scale(0.6);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-fab-sub:active {
+            transform: scale(0.9) !important;
+            background: #333;
+        }
+        .btn-fab-sub svg {
+            width: 20px;
+            height: 20px;
+            fill: #2ecc71; /* Akzentfarbe für Icons */
+        }
+
+        /* Zustand: Ausgeklappt */
+        .fab-container.open .fab-options {
+            pointer-events: auto;
+        }
+        .fab-container.open .btn-fab-sub {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        /* Staggered Delay beim Ausklappen */
+        .fab-container.open .btn-fab-sub:nth-child(1) { transition-delay: 0.03s; }
+        .fab-container.open .btn-fab-sub:nth-child(2) { transition-delay: 0.07s; }
+        .fab-container.open .btn-fab-sub:nth-child(3) { transition-delay: 0.11s; }
+
+
         /* Floating Button unten links (+) */
         .btn-add-wrapper {
             position: absolute;
-            bottom: 80px;
+            bottom: calc(80px + env(safe-area-inset-bottom));
             left: 20px;
             z-index: 10;
         }
@@ -54,10 +146,10 @@
             display: none;
         }
 
-        /* Floating Button unten links (Standort zentrieren) */
+        /* Floating Button unten links (Standort) */
         .btn-location-wrapper {
             position: absolute;
-            bottom: 25px;
+            bottom: calc(25px + env(safe-area-inset-bottom));
             left: 20px;
             z-index: 10;
         }
@@ -67,7 +159,7 @@
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            border: none;
+            border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
             display: flex;
             align-items: center;
@@ -80,12 +172,12 @@
             background: #333;
         }
         .btn-location svg {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             fill: currentColor;
         }
 
-        /* Styling für den Standorts-Punkt mit integrierter Ausrichtungsspitze */
+        /* User Location Marker Styling */
         .user-location-marker {
             position: relative;
             width: 40px;
@@ -135,14 +227,15 @@
             100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
         }
 
-        /* Modal-Eingabefenster */
+        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
             z-index: 2000;
             display: none;
             align-items: center;
@@ -155,7 +248,10 @@
             border-radius: 16px;
             width: 85%;
             max-width: 360px;
+            max-height: 80vh;
+            overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
         }
         .modal-content h3 {
             margin-top: 0;
@@ -169,7 +265,7 @@
             font-size: 12px;
             color: #aaa;
         }
-        .modal-content input, .modal-content textarea {
+        .modal-content input, .modal-content textarea, .modal-content select {
             width: 100%;
             box-sizing: border-box;
             background: #333;
@@ -198,13 +294,22 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .btn-save {
-            background: #27ae60;
-            color: white;
+        .btn-save { background: #27ae60; color: white; }
+        .btn-cancel { background: #444; color: white; }
+
+        /* Trail Liste im Modal */
+        .trail-list-item {
+            padding: 12px;
+            background: #2c2c2c;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .btn-cancel {
-            background: #444;
-            color: white;
+        .trail-list-item:active {
+            background: #3a3a3a;
         }
 
         /* MapLibre Popups */
@@ -212,8 +317,9 @@
             background: #222;
             color: #fff;
             border-radius: 12px;
-            padding: 10px;
+            padding: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #222; }
         .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #222; }
@@ -221,7 +327,7 @@
         .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #222; }
         
         .trail-popup {
-            min-width: 180px;
+            min-width: 190px;
         }
         .trail-popup h4 {
             margin: 0 0 6px 0;
@@ -241,20 +347,34 @@
             font-size: 13px;
             color: #bbb;
         }
-        .trail-popup strong {
-            color: #fff;
-        }
-        .btn-delete-single {
+        .trail-popup strong { color: #fff; }
+        
+        .popup-action-btns {
+            display: flex;
+            gap: 6px;
             margin-top: 10px;
-            background: #e74c3c;
+        }
+        .btn-edit-single {
+            background: #f39c12;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            width: 100%;
+            flex: 1;
+        }
+        .btn-delete-single {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
         }
     </style>
 </head>
@@ -262,11 +382,50 @@
 
     <div id="map"></div>
 
+    <!-- Ausklappbares FAB Menü (Oben Links) -->
+    <div class="fab-container" id="fab-container">
+        <!-- Hauptbutton (3 Punkte / Schließen) -->
+        <button class="btn-fab-main" onclick="toggleFabMenu()" title="Menü">
+            <svg id="fab-icon-dots" viewBox="0 0 24 24">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+            <svg id="fab-icon-close" viewBox="0 0 24 24" style="display: none;">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </button>
+
+        <!-- Ausklappbare Icons (Ohne Text) -->
+        <div class="fab-options">
+            <!-- Button 1: Trails Liste -->
+            <button class="btn-fab-sub" onclick="openTrailsList()" title="Trails anzeigen">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                </svg>
+            </button>
+
+            <!-- Button 2: Map Style -->
+            <button class="btn-fab-sub" onclick="openStyleSelector()" title="Karten-Style">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.37-.61-.37-.99 0-.83.67-1.5 1.5-1.5h1.76c2.76 0 5-2.24 5-5 0-3.04-2.46-5.5-5.5-5.5zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9s1.5.67 1.5 1.5S7.33 12 6.5 12zm3-4c-.83 0-1.5-.67-1.5-1.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+            </button>
+
+            <!-- Button 3: Info / Hilfe -->
+            <button class="btn-fab-sub" onclick="openInfoModal()" title="Info & Anleitung">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload Button unten links -->
     <div class="btn-add-wrapper">
         <label for="file-input" class="btn-add">+</label>
         <input type="file" id="file-input" accept=".gpx">
     </div>
 
+    <!-- Standort Button unten links -->
     <div class="btn-location-wrapper">
         <button class="btn-location" onclick="centerToUserLocation()" title="Mein Standort">
             <svg viewBox="0 0 24 24">
@@ -275,6 +434,7 @@
         </button>
     </div>
 
+    <!-- Upload Modal -->
     <div class="modal-overlay" id="upload-modal">
         <div class="modal-content">
             <h3>Trail Details</h3>
@@ -285,8 +445,70 @@
             <textarea id="trail-desc" placeholder="z. B. Steil, viele Wurzeln, unten Schlüsselstelle..."></textarea>
             
             <div class="modal-buttons">
-                <button class="btn-modal btn-cancel" onclick="cancelUpload()">Abbrechen</button>
+                <button class="btn-modal btn-cancel" onclick="closeModal('upload-modal')">Abbrechen</button>
                 <button class="btn-modal btn-save" onclick="saveUpload()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-content">
+            <h3>Trail bearbeiten</h3>
+            <input type="hidden" id="edit-trail-id">
+            <label for="edit-trail-name">Name</label>
+            <input type="text" id="edit-trail-name">
+            
+            <label for="edit-trail-desc">Beschreibung</label>
+            <textarea id="edit-trail-desc"></textarea>
+            
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('edit-modal')">Abbrechen</button>
+                <button class="btn-modal btn-save" onclick="saveEdit()">Änderungen speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trails Liste Modal -->
+    <div class="modal-overlay" id="trails-list-modal">
+        <div class="modal-content">
+            <h3>Vorhandene Trails</h3>
+            <div id="trails-container"></div>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('trails-list-modal')">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Style Selector Modal -->
+    <div class="modal-overlay" id="style-modal">
+        <div class="modal-content">
+            <h3>Karten-Style wählen</h3>
+            <label for="style-select">Verfügbare Karten-Styles:</label>
+            <select id="style-select" onchange="changeMapStyle(this.value)">
+                <option value="custom">Standard Outdoor (MapTiler)</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('style-modal')">Fertig</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="info-modal">
+        <div class="modal-content">
+            <h3>Über ShredMap</h3>
+            <p style="font-size: 13px; line-height: 1.5; color: #ccc;">
+                <strong>ShredMap</strong> ist deine Community-Karte für Trails. Jeder kann GPX-Tracks hochladen und die Karte erweitern.
+            </p>
+            <h4 style="color: #2ecc71; margin-bottom: 5px;">So funktioniert's:</h4>
+            <ol style="font-size: 13px; line-height: 1.5; color: #ccc; padding-left: 20px; margin-top: 5px;">
+                <li>Tracke deine Fahrt in Komoot, Strava etc.</li>
+                <li>Exportiere die Strecke als <strong>.gpx Datei</strong>.</li>
+                <li>Klicke auf das <strong>+ Icon</strong> unten links und lade die Datei hoch.</li>
+            </ol>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-cancel" onclick="closeModal('info-modal')">Schließen</button>
             </div>
         </div>
     </div>
@@ -302,16 +524,15 @@
         
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // HIER DEINE MAPTILER URL UND KEY EINFÜGEN:
         const MAPTILER_KEY = '7LiPrNQYxbEkCspqfc7Q';
-        const MAP_STYLE_URL = `https://api.maptiler.com/maps/01a0541e-e459-7ad9-aec6-e4d2401944ef/style.json?key=${MAPTILER_KEY}`;
+        const DEFAULT_MAP_STYLE = `https://api.maptiler.com/maps/01a0541e-e459-7ad9-aec6-e4d2401944ef/style.json?key=${MAPTILER_KEY}`;
 
         const map = new maplibregl.Map({
             container: 'map',
-            style: MAP_STYLE_URL,
+            style: DEFAULT_MAP_STYLE,
             center: [11.4041, 47.2692],
             zoom: 13,
-            maxPitch: 85,
+            maxPitch: 60, /* Begrenzt, um MapTiler Requests zu schonen */
             pitchWithRotate: true
         });
 
@@ -332,20 +553,48 @@
             return trailColors[num % trailColors.length];
         }
 
-        let loadedTrailIds = [];
+        let loadedTrailsData = {}; 
         let currentGpxContent = null;
         let userMarker = null;
         let userLngLat = null;
         let currentHeading = null;
         let kompassInitialized = false;
         let highlightedTrailId = null;
+        let currentActivePopup = null;
+
+        // --- FAB MENÜ LOGIK ---
+        function toggleFabMenu() {
+            const container = document.getElementById('fab-container');
+            const mainBtn = container.querySelector('.btn-fab-main');
+            const dotsIcon = document.getElementById('fab-icon-dots');
+            const closeIcon = document.getElementById('fab-icon-close');
+
+            const isOpen = container.classList.toggle('open');
+            
+            if (isOpen) {
+                mainBtn.classList.add('active');
+                dotsIcon.style.display = 'none';
+                closeIcon.style.display = 'block';
+            } else {
+                mainBtn.classList.remove('active');
+                dotsIcon.style.display = 'block';
+                closeIcon.style.display = 'none';
+            }
+        }
+
+        // Schließt das FAB-Menü beim Klick auf die Karte
+        map.on('click', () => {
+            const container = document.getElementById('fab-container');
+            if (container.classList.contains('open')) {
+                toggleFabMenu();
+            }
+        });
 
         // Marker DOM-Element
         const el = document.createElement('div');
         el.className = 'user-location-marker';
         el.innerHTML = '<div class="user-location-heading" id="user-heading"></div><div class="user-location-pulse"></div><div class="user-location-dot"></div>';
 
-        // Ausrichtung bei Kartenrotation aktualisieren
         map.on('rotate', updateHeadingUI);
 
         function updateHeadingUI() {
@@ -371,7 +620,6 @@
         function initKompass() {
             if (kompassInitialized) return;
 
-            // Prüfen ob iOS Berechtigung verlangt
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(response => {
@@ -390,38 +638,28 @@
             }
         }
 
-        // GPS Standort-Tracking
         if ('geolocation' in navigator) {
             navigator.geolocation.watchPosition(
                 (position) => {
                     userLngLat = [position.coords.longitude, position.coords.latitude];
-                    
                     if (!userMarker) {
                         userMarker = new maplibregl.Marker({ element: el }).setLngLat(userLngLat).addTo(map);
-                        initKompass(); // Versuche direkten Start (Android/Desktop)
+                        initKompass();
                     } else {
                         userMarker.setLngLat(userLngLat);
                     }
-
-                    // Falls vom GPS ein Bewegungswinkel (Heading) vorliegt, diesen als Fallback nutzen
                     if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
                         currentHeading = position.coords.heading;
                         updateHeadingUI();
                     }
                 },
-                (error) => {
-                    console.error("Standort-Fehler:", error.message);
-                },
+                (error) => console.error("Standort-Fehler:", error.message),
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         }
 
         function centerToUserLocation() {
-            // iOS Fallback: Manuelle Freigabe beim Klick
-            if (!kompassInitialized) {
-                initKompass();
-            }
-
+            if (!kompassInitialized) initKompass();
             if (userLngLat) {
                 map.flyTo({ center: userLngLat, zoom: 16, speed: 1.2 });
             } else {
@@ -429,7 +667,7 @@
             }
         }
 
-        // GPX-File Handler
+        // Upload Handler
         document.getElementById('file-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -445,24 +683,17 @@
         });
 
         async function saveUpload() {
-            if (!currentGpxContent) {
-                alert("Die Datei wurde noch nicht vollständig gelesen!");
-                return;
-            }
+            if (!currentGpxContent) return;
 
             const name = document.getElementById('trail-name').value.trim() || 'Unbenannter Trail';
             const desc = document.getElementById('trail-desc').value.trim();
             const gpxToSend = currentGpxContent; 
 
-            closeModal();
+            closeModal('upload-modal');
 
             const { data, error } = await db
                 .from('Trails')
-                .insert([{ 
-                    name: name, 
-                    description: desc, 
-                    gpx_data: gpxToSend 
-                }])
+                .insert([{ name: name, description: desc, gpx_data: gpxToSend }])
                 .select();
 
             if (error) {
@@ -475,18 +706,16 @@
             }
         }
 
-        function cancelUpload() { closeModal(); }
-        function closeModal() {
-            document.getElementById('upload-modal').style.display = 'none';
-            document.getElementById('file-input').value = '';
-            currentGpxContent = null;
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            if(id === 'upload-modal') {
+                document.getElementById('file-input').value = '';
+                currentGpxContent = null;
+            }
         }
 
         function calculateTrailStats(geojson) {
             let distMeters = 0;
-            let eleGain = 0;
-            let eleLoss = 0;
-
             const coordinates = geojson.features.flatMap(f => {
                 if (f.geometry.type === 'LineString') return [f.geometry.coordinates];
                 if (f.geometry.type === 'MultiLineString') return f.geometry.coordinates;
@@ -497,7 +726,6 @@
                 for (let i = 0; i < line.length - 1; i++) {
                     const p1 = line[i];
                     const p2 = line[i+1];
-                    
                     const R = 6371000;
                     const dLat = (p2[1] - p1[1]) * Math.PI / 180;
                     const dLon = (p2[0] - p1[0]) * Math.PI / 180;
@@ -505,20 +733,10 @@
                               Math.cos(p1[1] * Math.PI / 180) * Math.cos(p2[1] * Math.PI / 180) *
                               Math.sin(dLon/2) * Math.sin(dLon/2);
                     distMeters += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-                    if (p1[2] !== undefined && p2[2] !== undefined) {
-                        const diff = p2[2] - p1[2];
-                        if (diff > 0) eleGain += diff;
-                        else eleLoss += Math.abs(diff);
-                    }
                 }
             });
 
-            return {
-                distKm: (distMeters / 1000).toFixed(2),
-                eleGain: Math.round(eleGain),
-                eleLoss: Math.round(eleLoss)
-            };
+            return { distKm: (distMeters / 1000).toFixed(2) };
         }
 
         function addGpxToMap(gpxData, dbId, customName, customDesc, zoomTo = false) {
@@ -529,119 +747,187 @@
             const color = getStableTrailColor(dbId);
             const sourceId = `trail-source-${dbId}`;
             const layerId = `trail-layer-${dbId}`;
+            const highlightLayerId = `trail-highlight-${dbId}`;
+            const labelLayerId = `trail-label-${dbId}`;
 
-            map.addSource(sourceId, {
-                type: 'geojson',
-                data: geojson
-            });
+            loadedTrailsData[dbId] = { id: dbId, name: customName, description: customDesc, geojson: geojson, gpx: gpxData };
 
-            // 1. UNSICHTBARER HITBOX-LAYER (Für leichtes Anklicken)
+            map.addSource(sourceId, { type: 'geojson', data: geojson });
+
             map.addLayer({
                 'id': `${layerId}-hitbox`,
                 'type': 'line',
                 'source': sourceId,
-                'layout': {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
+                'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                'paint': { 'line-width': 22, 'line-opacity': 0 }
+            });
+
+            map.addLayer({
+                'id': highlightLayerId,
+                'type': 'line',
+                'source': sourceId,
+                'layout': { 'line-join': 'round', 'line-cap': 'round' },
                 'paint': {
-                    'line-width': 20, // <--- Sehr breit, damit man leicht trifft!
-                    'line-opacity': 0  // <--- Komplett unsichtbar
+                    'line-color': '#ffffff',
+                    'line-width': 8,
+                    'line-opacity': 0
                 }
             });
 
-            // 2. OPTISCHER LAYER (Für das schöne, dünne Aussehen)
             map.addLayer({
                 'id': layerId,
                 'type': 'line',
                 'source': sourceId,
-                'layout': {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
+                'layout': { 'line-join': 'round', 'line-cap': 'round' },
                 'paint': {
                     'line-color': color,
-                    'line-width': 3, // <--- Schön dünn
-                    'line-opacity': 0.5
+                    'line-width': 3,
+                    'line-opacity': 0.8
                 }
             });
 
-            // 1. Klick-Event auf die HITBOX legen (nicht auf layerId!)
+            map.addLayer({
+                'id': labelLayerId,
+                'type': 'symbol',
+                'source': sourceId,
+                'minzoom': 13.5,
+                'layout': {
+                    'symbol-placement': 'line',
+                    'text-field': customName || 'Trail',
+                    'text-size': 11,
+                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                    'text-max-angle': 30,
+                    'text-letter-spacing': 0.05
+                },
+                'paint': {
+                    'text-color': '#ffffff',
+                    'text-halo-color': '#000000',
+                    'text-halo-width': 2
+                }
+            });
+
             map.on('click', `${layerId}-hitbox`, (e) => {
                 if (e.originalEvent) e.originalEvent.stopPropagation();
-
-                // Vorheriges Highlight zurücksetzen
-                if (highlightedTrailId && map.getLayer(`trail-layer-${highlightedTrailId}`)) {
-                    const prevColor = getStableTrailColor(highlightedTrailId);
-                    map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-width', 3);
-                    map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-color', prevColor);
-                }
-
-                // Aktuellen OPTISCHEN Layer hervorheben
-                highlightedTrailId = dbId;
-                if (map.getLayer(layerId)) {
-                    map.moveLayer(layerId); // Schiebt den sichtbaren Trail nach oben
-                    map.setPaintProperty(layerId, 'line-width', 7);
-                    map.setPaintProperty(layerId, 'line-color', '#ffffff');
-                }
-
-                map.triggerRepaint();
-
-                // Popup-Inhalt & Erstellung
-                const stats = calculateTrailStats(geojson);
-                const name = customName || 'Unbenannter Trail';
-                const descHtml = customDesc ? `<div class="desc">${customDesc}</div>` : '';
-
-                const popupHtml = `
-                    <div class="trail-popup">
-                        <h4 style="color: ${color};">${name}</h4>
-                        ${descHtml}
-                        <p>Länge: <strong>${stats.distKm} km</strong></p>
-                        <button class="btn-delete-single" onclick="deleteSingleTrail(${dbId})">Trail für alle löschen</button>
-                    </div>
-                `;
-
-                const popup = new maplibregl.Popup()
-                    .setLngLat(e.lngLat)
-                    .setHTML(popupHtml)
-                    .addTo(map);
-
-                // Wenn das Popup geschlossen wird, das Highlight wieder aufheben
-                popup.on('close', () => {
-                    if (map.getLayer(layerId)) {
-                        map.setPaintProperty(layerId, 'line-width', 3);
-                        map.setPaintProperty(layerId, 'line-color', color);
-                        map.triggerRepaint();
-                    }
-                    highlightedTrailId = null;
-                });
+                selectTrail(dbId, e.lngLat);
             });
 
-            // 2. Cursor-Events ebenfalls komplett auf die HITBOX legen
             map.on('mouseenter', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = ''; });
 
             if (zoomTo && geojson.features.length > 0) {
-                const bounds = new maplibregl.LngLatBounds();
-                geojson.features.forEach(f => {
-                    if (f.geometry.type === 'LineString') {
-                        f.geometry.coordinates.forEach(coord => bounds.extend([coord[0], coord[1]]));
-                    } else if (f.geometry.type === 'MultiLineString') {
-                        f.geometry.coordinates.flatMap(c => c).forEach(coord => bounds.extend([coord[0], coord[1]]));
-                    }
-                });
-                if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40 });
+                focusTrailBounds(geojson);
+            }
+        }
+
+        function selectTrail(dbId, targetLngLat = null) {
+            clearHighlight();
+
+            highlightedTrailId = dbId;
+            const highlightLayerId = `trail-highlight-${dbId}`;
+            
+            if (map.getLayer(highlightLayerId)) {
+                map.setPaintProperty(highlightLayerId, 'line-opacity', 1);
             }
 
-            loadedTrailIds.push(dbId);
+            const trail = loadedTrailsData[dbId];
+            if (!trail) return;
+
+            const stats = calculateTrailStats(trail.geojson);
+            const color = getStableTrailColor(dbId);
+            const name = trail.name || 'Unbenannter Trail';
+            const descHtml = trail.description ? `<div class="desc">${escapeHtml(trail.description)}</div>` : '';
+
+            const popupHtml = `
+                <div class="trail-popup">
+                    <h4 style="color: ${color};">${escapeHtml(name)}</h4>
+                    ${descHtml}
+                    <p>Länge: <strong>${stats.distKm} km</strong></p>
+                    <div class="popup-action-btns">
+                        <button class="btn-edit-single" onclick="openEditModal(${dbId})">Bearbeiten</button>
+                        <button class="btn-delete-single" onclick="deleteSingleTrail(${dbId})">Löschen</button>
+                    </div>
+                </div>
+            `;
+
+            let clickPos = targetLngLat;
+            if (!clickPos && trail.geojson.features.length > 0) {
+                const firstCoord = trail.geojson.features[0].geometry.coordinates[0];
+                clickPos = Array.isArray(firstCoord[0]) ? firstCoord[0] : firstCoord;
+            }
+
+            if (currentActivePopup) currentActivePopup.remove();
+
+            currentActivePopup = new maplibregl.Popup()
+                .setLngLat(clickPos)
+                .setHTML(popupHtml)
+                .addTo(map);
+
+            currentActivePopup.on('close', () => {
+                clearHighlight();
+            });
+        }
+
+        function clearHighlight() {
+            if (highlightedTrailId && map.getLayer(`trail-highlight-${highlightedTrailId}`)) {
+                map.setPaintProperty(`trail-highlight-${highlightedTrailId}`, 'line-opacity', 0);
+            }
+            highlightedTrailId = null;
+        }
+
+        function focusTrailBounds(geojson) {
+            const bounds = new maplibregl.LngLatBounds();
+            geojson.features.forEach(f => {
+                if (f.geometry.type === 'LineString') {
+                    f.geometry.coordinates.forEach(coord => bounds.extend([coord[0], coord[1]]));
+                } else if (f.geometry.type === 'MultiLineString') {
+                    f.geometry.coordinates.flatMap(c => c).forEach(coord => bounds.extend([coord[0], coord[1]]));
+                }
+            });
+            if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 50 });
+        }
+
+        function openEditModal(dbId) {
+            const trail = loadedTrailsData[dbId];
+            if (!trail) return;
+
+            document.getElementById('edit-trail-id').value = dbId;
+            document.getElementById('edit-trail-name').value = trail.name;
+            document.getElementById('edit-trail-desc').value = trail.description || '';
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        async function saveEdit() {
+            const dbId = document.getElementById('edit-trail-id').value;
+            const newName = document.getElementById('edit-trail-name').value.trim() || 'Unbenannter Trail';
+            const newDesc = document.getElementById('edit-trail-desc').value.trim();
+
+            closeModal('edit-modal');
+
+            const { error } = await db
+                .from('Trails')
+                .update({ name: newName, description: newDesc })
+                .eq('id', dbId);
+
+            if (error) {
+                alert("Fehler beim Aktualisieren: " + error.message);
+                return;
+            }
+
+            if (loadedTrailsData[dbId]) {
+                loadedTrailsData[dbId].name = newName;
+                loadedTrailsData[dbId].description = newDesc;
+                
+                if (map.getLayer(`trail-label-${dbId}`)) {
+                    map.setLayoutProperty(`trail-label-${dbId}`, 'text-field', newName);
+                }
+            }
+
+            selectTrail(dbId);
         }
 
         async function deleteSingleTrail(dbId) {
-            if (confirm("Diesen Trail wirklich für ALLE Benutzer aus der Cloud löschen?")) {
-                const { error } = await db
-                    .from('Trails')
-                    .delete()
-                    .eq('id', dbId);
+            if (confirm("Diesen Trail wirklich aus der Cloud löschen?")) {
+                const { error } = await db.from('Trails').delete().eq('id', dbId);
 
                 if (error) {
                     alert("Fehler beim Löschen: " + error.message);
@@ -649,35 +935,84 @@
                 }
 
                 if (map.getLayer(`trail-layer-${dbId}`)) map.removeLayer(`trail-layer-${dbId}`);
+                if (map.getLayer(`trail-highlight-${dbId}`)) map.removeLayer(`trail-highlight-${dbId}`);
+                if (map.getLayer(`trail-layer-${dbId}-hitbox`)) map.removeLayer(`trail-layer-${dbId}-hitbox`);
+                if (map.getLayer(`trail-label-${dbId}`)) map.removeLayer(`trail-label-${dbId}`);
                 if (map.getSource(`trail-source-${dbId}`)) map.removeSource(`trail-source-${dbId}`);
                 
-                const popups = document.getElementsByClassName('maplibregl-popup');
-                if (popups[0]) popups[0].remove();
-
-                loadedTrailIds = loadedTrailIds.filter(id => id !== dbId);
+                if (currentActivePopup) currentActivePopup.remove();
+                delete loadedTrailsData[dbId];
             }
         }
 
+        // Modal Steuerung über Unterbuttons
+        function openTrailsList() {
+            toggleFabMenu();
+            const container = document.getElementById('trails-container');
+            container.innerHTML = '';
+
+            const keys = Object.keys(loadedTrailsData);
+            if (keys.length === 0) {
+                container.innerHTML = '<p style="color: #aaa; font-size: 13px;">Noch keine Trails vorhanden.</p>';
+            } else {
+                keys.forEach(id => {
+                    const trail = loadedTrailsData[id];
+                    const color = getStableTrailColor(id);
+                    const item = document.createElement('div');
+                    item.className = 'trail-list-item';
+                    item.innerHTML = `
+                        <span style="color: ${color}; font-weight: bold;">${escapeHtml(trail.name)}</span>
+                        <span style="color: #666; font-size: 12px;">Ansehen ›</span>
+                    `;
+                    item.onclick = () => {
+                        closeModal('trails-list-modal');
+                        focusTrailBounds(trail.geojson);
+                        selectTrail(id);
+                    };
+                    container.appendChild(item);
+                });
+            }
+            document.getElementById('trails-list-modal').style.display = 'flex';
+        }
+
+        function openStyleSelector() {
+            toggleFabMenu();
+            document.getElementById('style-modal').style.display = 'flex';
+        }
+
+        function openInfoModal() {
+            toggleFabMenu();
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function changeMapStyle(url) {
+            if(url === 'custom') url = DEFAULT_MAP_STYLE;
+            map.setStyle(url);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
         map.on('load', async () => {
-            // Optionale 3D-Höhendaten von MapTiler laden
-            if (MAPTILER_KEY && MAPTILER_KEY !== '7LiPrNQYxbEkCspqfc7Q') {
+            if (MAPTILER_KEY) {
                 map.addSource('maptiler-terrain', {
                     type: 'raster-dem',
                     url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${MAPTILER_KEY}`,
                     tileSize: 512
                 });
-
-                map.setTerrain({
-                    source: 'maptiler-terrain',
-                    exaggeration: 1.0
-                });
+                map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.0 });
             }
 
-            // Trails aus Supabase laden
-            const { data: trails, error } = await db
-                .from('Trails')
-                .select('*');
+            if (map.getLayer('Building 3D')) {
+                map.setPaintProperty('Building 3D', 'fill-extrusion-base', 0);
+                map.setPaintProperty('Building 3D', 'fill-extrusion-height', [
+                    'coalesce', ['get', 'render_height'], ['get', 'height'], 10
+                ]);
+            }
 
+            const { data: trails, error } = await db.from('Trails').select('*');
             if (error) {
                 console.error("Fehler beim Laden aus Supabase:", error);
                 return;
