@@ -16,16 +16,17 @@
             height: 100%;
             width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #191a1a;
+            background-color: #121212;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            font-weight: 400;
         }
         #map {
             height: 100%;
             width: 100%;
         }
 
-        /* --- Ausklappbares FAB Menü (Oben Links) --- */
+        /* --- Minimalistisches Ausklappbares FAB Menü (Oben Links) --- */
         .fab-container {
             position: absolute;
             top: calc(15px + env(safe-area-inset-top));
@@ -37,68 +38,69 @@
         }
 
         .btn-fab-main {
-            background: #222;
-            color: #fff;
-            width: 48px;
-            height: 48px;
+            background: rgba(26, 26, 26, 0.9);
+            color: rgba(255, 255, 255, 0.85);
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 12;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+            transition: transform 0.25s ease, background-color 0.2s;
+            backdrop-filter: blur(8px);
         }
         .btn-fab-main:active {
-            transform: scale(0.92);
+            transform: scale(0.94);
         }
         .btn-fab-main.active {
             transform: rotate(90deg);
-            background: #333;
+            background: rgba(40, 40, 40, 0.95);
         }
         .btn-fab-main svg {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             fill: currentColor;
-            transition: transform 0.3s ease;
         }
 
         /* Unter-Buttons Container */
         .fab-options {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-            pointer-events: none; /* Deaktiviert Klicks solange eingeklappt */
+            gap: 8px;
+            margin-top: 8px;
+            pointer-events: none;
             z-index: 11;
         }
 
         .btn-fab-sub {
-            background: #222;
-            color: #fff;
-            width: 42px;
-            height: 42px;
+            background: rgba(26, 26, 26, 0.9);
+            color: rgba(255, 255, 255, 0.85);
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             opacity: 0;
-            transform: translateY(-20px) scale(0.6);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-15px) scale(0.7);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(8px);
         }
         .btn-fab-sub:active {
-            transform: scale(0.9) !important;
-            background: #333;
+            transform: scale(0.92) !important;
+            background: rgba(45, 45, 45, 0.95);
         }
         .btn-fab-sub svg {
-            width: 20px;
-            height: 20px;
-            fill: #2ecc71; /* Akzentfarbe für Icons */
+            width: 18px;
+            height: 18px;
+            fill: rgba(255, 255, 255, 0.85); /* Schlichtes Reinweiß */
         }
 
         /* Zustand: Ausgeklappt */
@@ -109,38 +111,37 @@
             opacity: 1;
             transform: translateY(0) scale(1);
         }
-        /* Staggered Delay beim Ausklappen */
-        .fab-container.open .btn-fab-sub:nth-child(1) { transition-delay: 0.03s; }
-        .fab-container.open .btn-fab-sub:nth-child(2) { transition-delay: 0.07s; }
-        .fab-container.open .btn-fab-sub:nth-child(3) { transition-delay: 0.11s; }
-
+        .fab-container.open .btn-fab-sub:nth-child(1) { transition-delay: 0.02s; }
+        .fab-container.open .btn-fab-sub:nth-child(2) { transition-delay: 0.05s; }
+        .fab-container.open .btn-fab-sub:nth-child(3) { transition-delay: 0.08s; }
 
         /* Floating Button unten links (+) */
         .btn-add-wrapper {
             position: absolute;
-            bottom: calc(80px + env(safe-area-inset-bottom));
-            left: 20px;
+            bottom: calc(70px + env(safe-area-inset-bottom));
+            left: 15px;
             z-index: 10;
         }
         .btn-add {
             background: #27ae60;
-            color: white;
-            width: 45px;
-            height: 45px;
+            color: rgba(255, 255, 255, 0.85);
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            font-size: 30px;
+            font-size: 24px;
             font-weight: 300;
             cursor: pointer;
-            border: none;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
             transition: transform 0.2s, background-color 0.2s;
+            backdrop-filter: blur(8px);
         }
         .btn-add:active {
-            transform: scale(0.95);
-            background: #219150;
+            transform: scale(0.94);
+            background: rgba(45, 45, 45, 0.95);
         }
         #file-input {
             display: none;
@@ -149,46 +150,47 @@
         /* Floating Button unten links (Standort) */
         .btn-location-wrapper {
             position: absolute;
-            bottom: calc(25px + env(safe-area-inset-bottom));
-            left: 20px;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            left: 15px;
             z-index: 10;
         }
         .btn-location {
-            background: #222;
+            background: rgba(26, 26, 26, 0.9);
             color: #3498db;
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.2s;
+            backdrop-filter: blur(8px);
         }
         .btn-location:active {
-            transform: scale(0.95);
-            background: #333;
+            transform: scale(0.94);
+            background: rgba(45, 45, 45, 0.95);
         }
         .btn-location svg {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             fill: currentColor;
         }
 
         /* User Location Marker Styling */
         .user-location-marker {
             position: relative;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
         }
         .user-location-heading {
             width: 0;
             height: 0;
-            border-left: 9px solid transparent;
-            border-right: 9px solid transparent;
-            border-bottom: 18px solid rgba(52, 152, 219, 1);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 14px solid rgba(255, 255, 255, 0.9);
             position: absolute;
             top: 50%;
             left: 50%;
@@ -198,12 +200,11 @@
             z-index: 2;
         }
         .user-location-dot {
-            width: 14px;
-            height: 14px;
-            background-color: rgba(52, 152, 219, 1);
-            border: 2px solid #ffffff;
+            width: 12px;
+            height: 12px;
+            background-color: #ffffff;
             border-radius: 50%;
-            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+            box-shadow: 0 0 6px rgba(0,0,0,0.6);
             position: absolute;
             top: 50%;
             left: 50%;
@@ -211,9 +212,9 @@
             z-index: 3;
         }
         .user-location-pulse {
-            width: 40px;
-            height: 40px;
-            background-color: rgba(52, 152, 219, 0.4);
+            width: 32px;
+            height: 32px;
+            background-color: rgba(255, 255, 255, 0.25);
             border-radius: 50%;
             position: absolute;
             top: 50%;
@@ -223,131 +224,142 @@
             z-index: 1;
         }
         @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
         }
 
-        /* Modals */
+        /* Schlichte Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
             z-index: 2000;
             display: none;
             align-items: center;
             justify-content: center;
         }
         .modal-content {
-            background: #222;
-            color: #fff;
-            padding: 20px;
-            border-radius: 16px;
-            width: 85%;
-            max-width: 360px;
+            background: #1e1e1e;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 18px;
+            border-radius: 12px;
+            width: 82%;
+            max-width: 340px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .modal-content h3 {
             margin-top: 0;
-            margin-bottom: 15px;
-            color: #2ecc71;
-            font-size: 18px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.2px;
         }
         .modal-content label {
             display: block;
-            margin-bottom: 5px;
-            font-size: 12px;
-            color: #aaa;
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
         }
         .modal-content input, .modal-content textarea, .modal-content select {
             width: 100%;
             box-sizing: border-box;
-            background: #333;
-            border: 1px solid #444;
+            background: #141414;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px;
+            outline: none;
         }
         .modal-content textarea {
-            height: 70px;
+            height: 60px;
             resize: vertical;
         }
         .modal-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 8px;
         }
         .btn-modal {
             flex: 1;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             border: none;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 400;
             cursor: pointer;
+            transition: background-color 0.15s;
         }
-        .btn-save { background: #27ae60; color: white; }
-        .btn-cancel { background: #444; color: white; }
+        .btn-save { background: rgba(255, 255, 255, 0.15); color: #fff; }
+        .btn-save:active { background: rgba(255, 255, 255, 0.25); }
+        .btn-cancel { background: transparent; color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .btn-cancel:active { background: rgba(255, 255, 255, 0.05); }
 
-        /* Trail Liste im Modal */
+        /* Minimalistische Trail Liste */
         .trail-list-item {
-            padding: 12px;
-            background: #2c2c2c;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            padding: 10px 12px;
+            background: #141414;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 6px;
+            margin-bottom: 6px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .trail-list-item:active {
-            background: #3a3a3a;
+            background: #252525;
         }
 
-        /* MapLibre Popups */
+        /* MapLibre Popups - Minimalistisch */
         .maplibregl-popup-content {
-            background: #222;
-            color: #fff;
-            border-radius: 12px;
+            background: rgba(26, 26, 26, 0.95);
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
             padding: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
         }
-        .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #222; }
-        .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #222; }
-        .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: #222; }
-        .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #222; }
+        .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: rgba(26, 26, 26, 0.95); }
+        .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: rgba(26, 26, 26, 0.95); }
+        .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: rgba(26, 26, 26, 0.95); }
+        .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: rgba(26, 26, 26, 0.95); }
         
         .trail-popup {
-            min-width: 190px;
+            min-width: 170px;
         }
         .trail-popup h4 {
-            margin: 0 0 6px 0;
-            font-size: 16px;
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 500;
         }
         .trail-popup .desc {
-            font-size: 13px;
-            color: #ddd;
-            background: #333;
-            padding: 6px;
-            border-radius: 6px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 8px;
+            border-radius: 4px;
             margin: 6px 0;
             white-space: pre-wrap;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
         .trail-popup p {
             margin: 4px 0;
-            font-size: 13px;
-            color: #bbb;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
         }
-        .trail-popup strong { color: #fff; }
+        .trail-popup strong { color: rgba(255, 255, 255, 0.85); font-weight: 400; }
         
         .popup-action-btns {
             display: flex;
@@ -355,26 +367,35 @@
             margin-top: 10px;
         }
         .btn-edit-single {
-            background: #f39c12;
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
+            background: rgba(255, 152, 0, 0.2);
+            color: #ffb74d;
+            border: 1px solid rgba(255, 152, 0, 0.4);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 400;
             cursor: pointer;
             flex: 1;
+            transition: background 0.15s;
         }
+        .btn-edit-single:active {
+            background: rgba(255, 152, 0, 0.35);
+        }
+
         .btn-delete-single {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
+            background: rgba(244, 67, 54, 0.2);
+            color: #ef9a9a;
+            border: 1px solid rgba(244, 67, 54, 0.4);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 400;
             cursor: pointer;
             flex: 1;
+            transition: background 0.15s;
+        }
+        .btn-delete-single:active {
+            background: rgba(244, 67, 54, 0.35);
         }
     </style>
 </head>
@@ -382,7 +403,7 @@
 
     <div id="map"></div>
 
-    <!-- Ausklappbares FAB Menü (Oben Links) -->
+    <!-- Minimalistisches FAB Menü (Oben Links) -->
     <div class="fab-container" id="fab-container">
         <!-- Hauptbutton (3 Punkte / Schließen) -->
         <button class="btn-fab-main" onclick="toggleFabMenu()" title="Menü">
@@ -394,23 +415,18 @@
             </svg>
         </button>
 
-        <!-- Ausklappbare Icons (Ohne Text) -->
+        <!-- Ausklappbare Icons (Schlicht & Reinweiß) -->
         <div class="fab-options">
-            <!-- Button 1: Trails Liste -->
             <button class="btn-fab-sub" onclick="openTrailsList()" title="Trails anzeigen">
                 <svg viewBox="0 0 24 24">
                     <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
                 </svg>
             </button>
-
-            <!-- Button 2: Map Style -->
             <button class="btn-fab-sub" onclick="openStyleSelector()" title="Karten-Style">
                 <svg viewBox="0 0 24 24">
                     <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.03.89 1.7.89h1.83c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.37-.61-.37-.99 0-.83.67-1.5 1.5-1.5h1.76c2.76 0 5-2.24 5-5 0-3.04-2.46-5.5-5.5-5.5zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9s1.5.67 1.5 1.5S7.33 12 6.5 12zm3-4c-.83 0-1.5-.67-1.5-1.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
                 </svg>
             </button>
-
-            <!-- Button 3: Info / Hilfe -->
             <button class="btn-fab-sub" onclick="openInfoModal()" title="Info & Anleitung">
                 <svg viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
@@ -437,12 +453,12 @@
     <!-- Upload Modal -->
     <div class="modal-overlay" id="upload-modal">
         <div class="modal-content">
-            <h3>Trail Details</h3>
+            <h3>Trail hochladen</h3>
             <label for="trail-name">Name</label>
             <input type="text" id="trail-name" placeholder="z. B. Nordkette Secret Line">
             
             <label for="trail-desc">Beschreibung</label>
-            <textarea id="trail-desc" placeholder="z. B. Steil, viele Wurzeln, unten Schlüsselstelle..."></textarea>
+            <textarea id="trail-desc" placeholder="Details zum Trail..."></textarea>
             
             <div class="modal-buttons">
                 <button class="btn-modal btn-cancel" onclick="closeModal('upload-modal')">Abbrechen</button>
@@ -464,7 +480,7 @@
             
             <div class="modal-buttons">
                 <button class="btn-modal btn-cancel" onclick="closeModal('edit-modal')">Abbrechen</button>
-                <button class="btn-modal btn-save" onclick="saveEdit()">Änderungen speichern</button>
+                <button class="btn-modal btn-save" onclick="saveEdit()">Speichern</button>
             </div>
         </div>
     </div>
@@ -483,10 +499,10 @@
     <!-- Style Selector Modal -->
     <div class="modal-overlay" id="style-modal">
         <div class="modal-content">
-            <h3>Karten-Style wählen</h3>
-            <label for="style-select">Verfügbare Karten-Styles:</label>
+            <h3>Karten-Style</h3>
+            <label for="style-select">Verfügbare Styles:</label>
             <select id="style-select" onchange="changeMapStyle(this.value)">
-                <option value="custom">Standard Outdoor (MapTiler)</option>
+                <option value="custom">Outdoor (MapTiler)</option>
             </select>
             <div class="modal-buttons">
                 <button class="btn-modal btn-cancel" onclick="closeModal('style-modal')">Fertig</button>
@@ -498,14 +514,14 @@
     <div class="modal-overlay" id="info-modal">
         <div class="modal-content">
             <h3>Über ShredMap</h3>
-            <p style="font-size: 13px; line-height: 1.5; color: #ccc;">
-                <strong>ShredMap</strong> ist deine Community-Karte für Trails. Jeder kann GPX-Tracks hochladen und die Karte erweitern.
+            <p style="font-size: 12px; line-height: 1.5; color: rgba(255, 255, 255, 0.6);">
+                ShredMap ist deine Community-Karte für Trails. Lade GPX-Tracks hoch und teile deine Strecken.
             </p>
-            <h4 style="color: #2ecc71; margin-bottom: 5px;">So funktioniert's:</h4>
-            <ol style="font-size: 13px; line-height: 1.5; color: #ccc; padding-left: 20px; margin-top: 5px;">
-                <li>Tracke deine Fahrt in Komoot, Strava etc.</li>
-                <li>Exportiere die Strecke als <strong>.gpx Datei</strong>.</li>
-                <li>Klicke auf das <strong>+ Icon</strong> unten links und lade die Datei hoch.</li>
+            <h4 style="color: rgba(255, 255, 255, 0.8); font-size: 13px; font-weight: 500; margin-bottom: 4px;">Anleitung:</h4>
+            <ol style="font-size: 12px; line-height: 1.5; color: rgba(255, 255, 255, 0.6); padding-left: 18px; margin-top: 4px;">
+                <li>Track in Komoot/Strava als <strong>.gpx</strong> exportieren.</li>
+                <li>Auf das <strong>+ Icon</strong> unten links tippen.</li>
+                <li>Datei auswählen und speichern.</li>
             </ol>
             <div class="modal-buttons">
                 <button class="btn-modal btn-cancel" onclick="closeModal('info-modal')">Schließen</button>
@@ -519,9 +535,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        // ==========================================
+        // 1. KONFIGURATION & INITIALISIERUNG
+        // ==========================================
         const SUPABASE_URL = 'https://styqdhuqcmukejmzucwa.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0eXFkaHVxY211a2VqbXp1Y3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4MTU3NDYsImV4cCI6MjEwMzM5MTc0Nn0.gG4WfcBNlhI0hW4woeftFlrmH5JyGJMzEtgy7k5BVkc';
-        
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const MAPTILER_KEY = '7LiPrNQYxbEkCspqfc7Q';
@@ -532,7 +550,7 @@
             style: DEFAULT_MAP_STYLE,
             center: [11.4041, 47.2692],
             zoom: 13,
-            maxPitch: 80, /* Begrenzt, um MapTiler Requests zu schonen */
+            maxPitch: 60,
             pitchWithRotate: true
         });
 
@@ -542,6 +560,7 @@
             visualizePitch: true
         }), 'top-right');
 
+        // Farbpalette für Trails
         const trailColors = [
             '#ff0055', '#00d2ff', '#ff9900', 
             '#a855f7', '#2ecc71', '#f1c40f', '#ff3333'
@@ -553,6 +572,7 @@
             return trailColors[num % trailColors.length];
         }
 
+        // globale Zustände
         let loadedTrailsData = {}; 
         let currentGpxContent = null;
         let userMarker = null;
@@ -562,7 +582,10 @@
         let highlightedTrailId = null;
         let currentActivePopup = null;
 
-        // --- FAB MENÜ LOGIK ---
+
+        // ==========================================
+        // 2. KARTEN- & FAB-EVENTS
+        // ==========================================
         function toggleFabMenu() {
             const container = document.getElementById('fab-container');
             const mainBtn = container.querySelector('.btn-fab-main');
@@ -582,15 +605,31 @@
             }
         }
 
-        // Schließt das FAB-Menü beim Klick auf die Karte
-        map.on('click', () => {
+        // Klick ins Leere setzt Highlight zurück & schließt Menü
+        map.on('click', (e) => {
+            // Prüfen, ob eine Vector-Feature angeklickt wurde
+            const features = map.queryRenderedFeatures(e.point);
+            const hitTrail = features.some(f => f.layer.id.endsWith('-hitbox'));
+
+            // Nur zurücksetzen, wenn man NICHT auf einen Trail geklickt hat
+            if (!hitTrail) {
+                clearHighlight();
+                if (currentActivePopup) {
+                    currentActivePopup.remove();
+                    currentActivePopup = null;
+                }
+            }
+
             const container = document.getElementById('fab-container');
-            if (container.classList.contains('open')) {
+            if (container && container.classList.contains('open')) {
                 toggleFabMenu();
             }
         });
 
-        // Marker DOM-Element
+
+        // ==========================================
+        // 3. GPS & KOMPASS (STANDORT)
+        // ==========================================
         const el = document.createElement('div');
         el.className = 'user-location-marker';
         el.innerHTML = '<div class="user-location-heading" id="user-heading"></div><div class="user-location-pulse"></div><div class="user-location-dot"></div>';
@@ -663,11 +702,168 @@
             if (userLngLat) {
                 map.flyTo({ center: userLngLat, zoom: 16, speed: 1.2 });
             } else {
-                alert("Dein Standort wird noch ermittelt...");
+                alert("Standort wird ermittelt...");
             }
         }
 
-        // Upload Handler
+
+        // ==========================================
+        // 4. TRAIL-HIGHLIGHTING & POPUP LOGIK
+        // ==========================================
+        function selectTrail(dbId, targetLngLat = null) {
+            // 1. Vorheriges Highlight zurücksetzen
+            clearHighlight();
+
+            // 2. Aktuellen Trail als hervorgehoben merken & stylen
+            highlightedTrailId = dbId;
+            const layerId = `trail-layer-${dbId}`;
+            
+            if (map.getLayer(layerId)) {
+                map.moveLayer(layerId); // Schiebt den Trail nach oben
+                map.setPaintProperty(layerId, 'line-width', 7);
+                map.setPaintProperty(layerId, 'line-color', '#ffffff');
+                map.setPaintProperty(layerId, 'line-opacity', 0.62);
+            }
+
+            const trail = loadedTrailsData[dbId];
+            if (!trail) return;
+
+            const stats = calculateTrailStats(trail.geojson);
+            const color = getStableTrailColor(dbId);
+            const name = trail.name || 'Unbenannter Trail';
+            const descHtml = trail.description ? `<div class="desc">${escapeHtml(trail.description)}</div>` : '';
+
+            const popupHtml = `
+                <div class="trail-popup">
+                    <h4 style="color: ${color};">${escapeHtml(name)}</h4>
+                    ${descHtml}
+                    <p>Länge: <strong>${stats.distKm} km</strong></p>
+                    <div class="popup-action-btns">
+                        <button class="btn-edit-single" onclick="openEditModal(${dbId})">Bearbeiten</button>
+                        <button class="btn-delete-single" onclick="deleteSingleTrail(${dbId})">Löschen</button>
+                    </div>
+                </div>
+            `;
+
+            let clickPos = targetLngLat;
+            if (!clickPos && trail.geojson.features.length > 0) {
+                const firstCoord = trail.geojson.features[0].geometry.coordinates[0];
+                clickPos = Array.isArray(firstCoord[0]) ? firstCoord[0] : firstCoord;
+            }
+
+            // Alt-Popup ohne Auslösen des Close-Listeners schließen
+            if (currentActivePopup) {
+                const oldPopup = currentActivePopup;
+                currentActivePopup = null; // Verhindert Callback-Schleife
+                oldPopup.remove();
+            }
+
+            // Neues Popup erstellen
+            const newPopup = new maplibregl.Popup()
+                .setLngLat(clickPos)
+                .setHTML(popupHtml)
+                .addTo(map);
+
+            currentActivePopup = newPopup;
+
+            // Nur das Highlight löschen, wenn wirklich DIESES Popup vom User geschlossen wird (z. B. via X-Button)
+            newPopup.on('close', () => {
+                if (currentActivePopup === newPopup) {
+                    clearHighlight();
+                    currentActivePopup = null;
+                }
+            });
+        }
+
+        function clearHighlight() {
+            if (highlightedTrailId && map.getLayer(`trail-layer-${highlightedTrailId}`)) {
+                const prevColor = getStableTrailColor(highlightedTrailId);
+                map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-width', 3);
+                map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-color', prevColor);
+                map.setPaintProperty(`trail-layer-${highlightedTrailId}`, 'line-opacity', 0.62);
+            }
+            highlightedTrailId = null;
+        }
+
+
+        // ==========================================
+        // 5. TRAIL ZUR KARTE HINZUFÜGEN
+        // ==========================================
+        function addGpxToMap(gpxData, dbId, customName, customDesc, zoomTo = false) {
+            const domParser = new DOMParser();
+            const gpxXml = domParser.parseFromString(gpxData, 'text/xml');
+            const geojson = toGeoJSON.gpx(gpxXml);
+            
+            const color = getStableTrailColor(dbId);
+            const sourceId = `trail-source-${dbId}`;
+            const layerId = `trail-layer-${dbId}`;
+            const labelLayerId = `trail-label-${dbId}`;
+
+            loadedTrailsData[dbId] = { id: dbId, name: customName, description: customDesc, geojson: geojson, gpx: gpxData };
+
+            map.addSource(sourceId, { type: 'geojson', data: geojson });
+
+            // 1. Unsichtbare Hitbox (Sehr breit zum leichten Anklicken)
+            map.addLayer({
+                'id': `${layerId}-hitbox`,
+                'type': 'line',
+                'source': sourceId,
+                'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                'paint': { 'line-width': 22, 'line-opacity': 0 }
+            });
+
+            // 2. Optischer Trail (Standard: Stärke 3, Opazität 0.62)
+            map.addLayer({
+                'id': layerId,
+                'type': 'line',
+                'source': sourceId,
+                'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                'paint': {
+                    'line-color': color,
+                    'line-width': 3,
+                    'line-opacity': 0.62
+                }
+            });
+
+            // 3. Beschriftungs-Layer
+            map.addLayer({
+                'id': labelLayerId,
+                'type': 'symbol',
+                'source': sourceId,
+                'minzoom': 13.5,
+                'layout': {
+                    'symbol-placement': 'line',
+                    'text-field': customName || 'Trail',
+                    'text-size': 11,
+                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                    'text-max-angle': 30,
+                    'text-letter-spacing': 0.05
+                },
+                'paint': {
+                    'text-color': '#ffffff',
+                    'text-halo-color': '#000000',
+                    'text-halo-width': 2
+                }
+            });
+
+            // Event Handling auf die Hitbox
+            map.on('click', `${layerId}-hitbox`, (e) => {
+                if (e.originalEvent) e.originalEvent.stopPropagation();
+                selectTrail(dbId, e.lngLat);
+            });
+
+            map.on('mouseenter', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = ''; });
+
+            if (zoomTo && geojson.features.length > 0) {
+                focusTrailBounds(geojson);
+            }
+        }
+
+
+        // ==========================================
+        // 6. UPLOAD, EDIT & DELETE LOGIK
+        // ==========================================
         document.getElementById('file-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -697,193 +893,13 @@
                 .select();
 
             if (error) {
-                alert("Fehler beim Speichern in Supabase: " + error.message);
+                alert("Fehler beim Speichern: " + error.message);
                 return;
             }
 
             if (data && data.length > 0) {
                 addGpxToMap(data[0].gpx_data, data[0].id, data[0].name, data[0].description, true);
             }
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-            if(id === 'upload-modal') {
-                document.getElementById('file-input').value = '';
-                currentGpxContent = null;
-            }
-        }
-
-        function calculateTrailStats(geojson) {
-            let distMeters = 0;
-            const coordinates = geojson.features.flatMap(f => {
-                if (f.geometry.type === 'LineString') return [f.geometry.coordinates];
-                if (f.geometry.type === 'MultiLineString') return f.geometry.coordinates;
-                return [];
-            });
-
-            coordinates.forEach(line => {
-                for (let i = 0; i < line.length - 1; i++) {
-                    const p1 = line[i];
-                    const p2 = line[i+1];
-                    const R = 6371000;
-                    const dLat = (p2[1] - p1[1]) * Math.PI / 180;
-                    const dLon = (p2[0] - p1[0]) * Math.PI / 180;
-                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                              Math.cos(p1[1] * Math.PI / 180) * Math.cos(p2[1] * Math.PI / 180) *
-                              Math.sin(dLon/2) * Math.sin(dLon/2);
-                    distMeters += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                }
-            });
-
-            return { distKm: (distMeters / 1000).toFixed(2) };
-        }
-
-        function addGpxToMap(gpxData, dbId, customName, customDesc, zoomTo = false) {
-            const domParser = new DOMParser();
-            const gpxXml = domParser.parseFromString(gpxData, 'text/xml');
-            const geojson = toGeoJSON.gpx(gpxXml);
-            
-            const color = getStableTrailColor(dbId);
-            const sourceId = `trail-source-${dbId}`;
-            const layerId = `trail-layer-${dbId}`;
-            const highlightLayerId = `trail-highlight-${dbId}`;
-            const labelLayerId = `trail-label-${dbId}`;
-
-            loadedTrailsData[dbId] = { id: dbId, name: customName, description: customDesc, geojson: geojson, gpx: gpxData };
-
-            map.addSource(sourceId, { type: 'geojson', data: geojson });
-
-            map.addLayer({
-                'id': `${layerId}-hitbox`,
-                'type': 'line',
-                'source': sourceId,
-                'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                'paint': { 'line-width': 22, 'line-opacity': 0 }
-            });
-
-            map.addLayer({
-                'id': highlightLayerId,
-                'type': 'line',
-                'source': sourceId,
-                'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                'paint': {
-                    'line-color': '#ffffff',
-                    'line-width': 8,
-                    'line-opacity': 0
-                }
-            });
-
-            map.addLayer({
-                'id': layerId,
-                'type': 'line',
-                'source': sourceId,
-                'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                'paint': {
-                    'line-color': color,
-                    'line-width': 3,
-                    'line-opacity': 0.8
-                }
-            });
-
-            map.addLayer({
-                'id': labelLayerId,
-                'type': 'symbol',
-                'source': sourceId,
-                'minzoom': 13.5,
-                'layout': {
-                    'symbol-placement': 'line',
-                    'text-field': customName || 'Trail',
-                    'text-size': 11,
-                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-                    'text-max-angle': 30,
-                    'text-letter-spacing': 0.05
-                },
-                'paint': {
-                    'text-color': '#ffffff',
-                    'text-halo-color': '#000000',
-                    'text-halo-width': 2
-                }
-            });
-
-            map.on('click', `${layerId}-hitbox`, (e) => {
-                if (e.originalEvent) e.originalEvent.stopPropagation();
-                selectTrail(dbId, e.lngLat);
-            });
-
-            map.on('mouseenter', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', `${layerId}-hitbox`, () => { map.getCanvas().style.cursor = ''; });
-
-            if (zoomTo && geojson.features.length > 0) {
-                focusTrailBounds(geojson);
-            }
-        }
-
-        function selectTrail(dbId, targetLngLat = null) {
-            clearHighlight();
-
-            highlightedTrailId = dbId;
-            const highlightLayerId = `trail-highlight-${dbId}`;
-            
-            if (map.getLayer(highlightLayerId)) {
-                map.setPaintProperty(highlightLayerId, 'line-opacity', 1);
-            }
-
-            const trail = loadedTrailsData[dbId];
-            if (!trail) return;
-
-            const stats = calculateTrailStats(trail.geojson);
-            const color = getStableTrailColor(dbId);
-            const name = trail.name || 'Unbenannter Trail';
-            const descHtml = trail.description ? `<div class="desc">${escapeHtml(trail.description)}</div>` : '';
-
-            const popupHtml = `
-                <div class="trail-popup">
-                    <h4 style="color: ${color};">${escapeHtml(name)}</h4>
-                    ${descHtml}
-                    <p>Länge: <strong>${stats.distKm} km</strong></p>
-                    <div class="popup-action-btns">
-                        <button class="btn-edit-single" onclick="openEditModal(${dbId})">Bearbeiten</button>
-                        <button class="btn-delete-single" onclick="deleteSingleTrail(${dbId})">Löschen</button>
-                    </div>
-                </div>
-            `;
-
-            let clickPos = targetLngLat;
-            if (!clickPos && trail.geojson.features.length > 0) {
-                const firstCoord = trail.geojson.features[0].geometry.coordinates[0];
-                clickPos = Array.isArray(firstCoord[0]) ? firstCoord[0] : firstCoord;
-            }
-
-            if (currentActivePopup) currentActivePopup.remove();
-
-            currentActivePopup = new maplibregl.Popup()
-                .setLngLat(clickPos)
-                .setHTML(popupHtml)
-                .addTo(map);
-
-            currentActivePopup.on('close', () => {
-                clearHighlight();
-            });
-        }
-
-        function clearHighlight() {
-            if (highlightedTrailId && map.getLayer(`trail-highlight-${highlightedTrailId}`)) {
-                map.setPaintProperty(`trail-highlight-${highlightedTrailId}`, 'line-opacity', 0);
-            }
-            highlightedTrailId = null;
-        }
-
-        function focusTrailBounds(geojson) {
-            const bounds = new maplibregl.LngLatBounds();
-            geojson.features.forEach(f => {
-                if (f.geometry.type === 'LineString') {
-                    f.geometry.coordinates.forEach(coord => bounds.extend([coord[0], coord[1]]));
-                } else if (f.geometry.type === 'MultiLineString') {
-                    f.geometry.coordinates.flatMap(c => c).forEach(coord => bounds.extend([coord[0], coord[1]]));
-                }
-            });
-            if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 50 });
         }
 
         function openEditModal(dbId) {
@@ -926,7 +942,7 @@
         }
 
         async function deleteSingleTrail(dbId) {
-            if (confirm("Diesen Trail wirklich aus der Cloud löschen?")) {
+            if (confirm("Trail wirklich löschen?")) {
                 const { error } = await db.from('Trails').delete().eq('id', dbId);
 
                 if (error) {
@@ -934,18 +950,71 @@
                     return;
                 }
 
+                // Layer & Quelle sauber aus MapLibre entfernen
                 if (map.getLayer(`trail-layer-${dbId}`)) map.removeLayer(`trail-layer-${dbId}`);
-                if (map.getLayer(`trail-highlight-${dbId}`)) map.removeLayer(`trail-highlight-${dbId}`);
                 if (map.getLayer(`trail-layer-${dbId}-hitbox`)) map.removeLayer(`trail-layer-${dbId}-hitbox`);
                 if (map.getLayer(`trail-label-${dbId}`)) map.removeLayer(`trail-label-${dbId}`);
                 if (map.getSource(`trail-source-${dbId}`)) map.removeSource(`trail-source-${dbId}`);
                 
-                if (currentActivePopup) currentActivePopup.remove();
+                if (currentActivePopup) {
+                    currentActivePopup.remove();
+                    currentActivePopup = null;
+                }
+                
+                clearHighlight();
                 delete loadedTrailsData[dbId];
             }
         }
 
-        // Modal Steuerung über Unterbuttons
+
+        // ==========================================
+        // 7. HELFER & MODALS
+        // ==========================================
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            if(id === 'upload-modal') {
+                document.getElementById('file-input').value = '';
+                currentGpxContent = null;
+            }
+        }
+
+        function calculateTrailStats(geojson) {
+            let distMeters = 0;
+            const coordinates = geojson.features.flatMap(f => {
+                if (f.geometry.type === 'LineString') return [f.geometry.coordinates];
+                if (f.geometry.type === 'MultiLineString') return f.geometry.coordinates;
+                return [];
+            });
+
+            coordinates.forEach(line => {
+                for (let i = 0; i < line.length - 1; i++) {
+                    const p1 = line[i];
+                    const p2 = line[i+1];
+                    const R = 6371000;
+                    const dLat = (p2[1] - p1[1]) * Math.PI / 180;
+                    const dLon = (p2[0] - p1[0]) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                            Math.cos(p1[1] * Math.PI / 180) * Math.cos(p2[1] * Math.PI / 180) *
+                            Math.sin(dLon/2) * Math.sin(dLon/2);
+                    distMeters += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                }
+            });
+
+            return { distKm: (distMeters / 1000).toFixed(2) };
+        }
+
+        function focusTrailBounds(geojson) {
+            const bounds = new maplibregl.LngLatBounds();
+            geojson.features.forEach(f => {
+                if (f.geometry.type === 'LineString') {
+                    f.geometry.coordinates.forEach(coord => bounds.extend([coord[0], coord[1]]));
+                } else if (f.geometry.type === 'MultiLineString') {
+                    f.geometry.coordinates.flatMap(c => c).forEach(coord => bounds.extend([coord[0], coord[1]]));
+                }
+            });
+            if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 50 });
+        }
+
         function openTrailsList() {
             toggleFabMenu();
             const container = document.getElementById('trails-container');
@@ -953,7 +1022,7 @@
 
             const keys = Object.keys(loadedTrailsData);
             if (keys.length === 0) {
-                container.innerHTML = '<p style="color: #aaa; font-size: 13px;">Noch keine Trails vorhanden.</p>';
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.4); font-size: 12px;">Keine Trails vorhanden.</p>';
             } else {
                 keys.forEach(id => {
                     const trail = loadedTrailsData[id];
@@ -961,8 +1030,7 @@
                     const item = document.createElement('div');
                     item.className = 'trail-list-item';
                     item.innerHTML = `
-                        <span style="color: ${color}; font-weight: bold;">${escapeHtml(trail.name)}</span>
-                        <span style="color: #666; font-size: 12px;">Ansehen ›</span>
+                        <span style="color: ${color}; font-size: 13px;">${escapeHtml(trail.name)}</span>
                     `;
                     item.onclick = () => {
                         closeModal('trails-list-modal');
@@ -995,6 +1063,10 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
+
+        // ==========================================
+        // 8. MAP-LOAD (DATEN AUS SUPABASE LADEN)
+        // ==========================================
         map.on('load', async () => {
             if (MAPTILER_KEY) {
                 map.addSource('maptiler-terrain', {
