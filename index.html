@@ -551,8 +551,9 @@
             style: DEFAULT_MAP_STYLE,
             center: [11.4041, 47.2692],
             zoom: 13,
-            maxPitch: 60,
-            pitchWithRotate: true
+            maxPitch: 80,
+            pitchWithRotate: true,
+            attributionControl: true
         });
 
         map.addControl(new maplibregl.NavigationControl({
@@ -1069,14 +1070,14 @@
         // 8. MAP-LOAD (DATEN AUS SUPABASE LADEN)
         // ==========================================
         map.on('load', async () => {
-            if (MAPTILER_KEY) {
-                map.addSource('maptiler-terrain', {
-                    type: 'raster-dem',
-                    url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${MAPTILER_KEY}`,
-                    tileSize: 512
-                });
-                map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.0 });
-            }
+            // if (MAPTILER_KEY) {
+            //     map.addSource('maptiler-terrain', {
+            //         type: 'raster-dem',
+            //         url: `https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=${MAPTILER_KEY}`,
+            //         tileSize: 512
+            //     });
+            //     map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.0 });
+            // }
 
             if (map.getLayer('Building 3D')) {
                 map.setPaintProperty('Building 3D', 'fill-extrusion-base', 0);
